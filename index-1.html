@@ -1,0 +1,2242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Clicker</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f0c29">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;600;800&display=swap');
+
+  :root{
+    --bg1:#0f0c29;
+    --bg2:#302b63;
+    --bg3:#24243e;
+    --accent:#00e5ff;
+    --accent2:#ff4ecd;
+    --panel:#1a1a2ecc;
+    --border:#3a3a5c;
+    --text:#eef0ff;
+    --muted:#9a9ac4;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Rubik', sans-serif;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2) 50%,var(--bg3));
+    color:var(--text);
+    background-attachment:fixed;
+  }
+  header{
+    text-align:center;
+    padding:18px 10px 10px;
+  }
+  header h1{
+    font-family:'Press Start 2P', monospace;
+    font-size:1.4rem;
+    margin:0 0 10px;
+    letter-spacing:2px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    text-shadow:0 0 30px rgba(0,229,255,0.25);
+  }
+  .title-logo{
+    width:38px; height:38px;
+    vertical-align:-11px;
+    image-rendering:pixelated;
+    animation:titleGlowPulse 1.6s ease-in-out infinite alternate;
+  }
+  @keyframes titleGlowPulse{
+    from{ filter:drop-shadow(0 0 6px rgba(0,229,255,0.6)) drop-shadow(0 0 10px rgba(255,78,205,0.4)); }
+    to{ filter:drop-shadow(0 0 16px rgba(0,229,255,1)) drop-shadow(0 0 24px rgba(255,78,205,0.85)); }
+  }
+  .stats-bar{
+    display:flex;
+    justify-content:center;
+    gap:22px;
+    flex-wrap:wrap;
+    font-size:0.9rem;
+    color:var(--muted);
+  }
+  .stats-bar b{ color:var(--text); font-size:1.05rem; }
+  .stats-bar span.pix-count{ color:var(--accent); font-weight:800; }
+
+  nav.tabs{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:8px;
+    margin:16px 12px 6px;
+  }
+  nav.tabs button{
+    font-family:'Rubik', sans-serif;
+    font-weight:700;
+    padding:10px 16px;
+    min-height:44px;
+    border-radius:12px;
+    border:2px solid var(--border);
+    background:var(--panel);
+    color:var(--muted);
+    cursor:pointer;
+    font-size:0.85rem;
+    white-space:nowrap;
+    transition:all .15s;
+  }
+  nav.tabs button.active{
+    color:#0f0c29;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    border-color:transparent;
+    box-shadow:0 0 18px rgba(0,229,255,0.4);
+  }
+  nav.tabs button:hover:not(.active){ border-color:var(--accent); color:var(--text); }
+
+  .icon-mark{
+    width:16px; height:16px;
+    vertical-align:-3px;
+    margin-right:6px;
+    image-rendering:pixelated;
+  }
+
+  main{
+    max-width:1100px;
+    margin:0 auto;
+    padding:10px 16px 60px;
+  }
+
+  /* ---------- GAME TAB ---------- */
+  .game-layout{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:24px;
+    align-items:start;
+  }
+
+  .click-panel{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:16px;
+    background:var(--panel);
+    border:2px solid var(--border);
+    border-radius:18px;
+    padding:26px 18px;
+    position:relative;
+    overflow:hidden;
+  }
+  .click-zone{
+    position:relative;
+    width:180px;
+    height:180px;
+    border-radius:26px;
+    cursor:pointer;
+    background:linear-gradient(145deg,var(--accent),var(--accent2));
+    box-shadow:0 0 40px rgba(0,229,255,0.35), inset 0 0 20px rgba(255,255,255,0.25);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    user-select:none;
+    transition:transform .06s;
+    image-rendering:pixelated;
+  }
+  .click-zone:active{ transform:scale(0.92); }
+  .click-zone.rate-limited{
+    box-shadow:0 0 40px rgba(255,60,60,0.75), inset 0 0 20px rgba(255,255,255,0.25);
+    animation:rateLimitShake 0.2s ease;
+  }
+  @keyframes rateLimitShake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+  .click-zone .glyph{
+    font-family:'Press Start 2P', monospace;
+    font-size:2.4rem;
+    color:#0f0c29cc;
+  }
+
+  /* --- Logo de la zone de clic : éclat de pixels en rotation 3D --- */
+  .burst-3d{
+    position:relative;
+    width:130px; height:130px;
+    animation:burstGroupPulse 1.6s ease-in-out infinite;
+  }
+  .burst-3d .core{
+    width:34px; height:34px;
+    background:linear-gradient(135deg,#ffffff,#00e5ff);
+    border-radius:7px;
+    position:absolute; top:37%; left:37%;
+    box-shadow:0 0 22px 8px rgba(255,255,255,0.65);
+    animation:burstPulse 0.9s ease-in-out infinite alternate;
+  }
+  .burst-3d .chip{
+    position:absolute;
+    width:16px; height:16px;
+    border-radius:3px;
+    box-shadow:0 0 6px rgba(0,0,0,0.25);
+  }
+  .burst-3d .chip:nth-child(2){ top:2%;  left:44%; background:#ff4ecd; }
+  .burst-3d .chip:nth-child(3){ top:17%; left:76%; background:#f1c40f; }
+  .burst-3d .chip:nth-child(4){ top:52%; left:83%; background:#2ecc71; }
+  .burst-3d .chip:nth-child(5){ top:79%; left:60%; background:#9b59b6; }
+  .burst-3d .chip:nth-child(6){ top:79%; left:24%; background:#e74c3c; }
+  .burst-3d .chip:nth-child(7){ top:52%; left:2%;  background:#1abc9c; }
+  .burst-3d .chip:nth-child(8){ top:17%; left:10%; background:#ffffff; }
+  @keyframes burstGroupPulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.09); }
+  }
+  @keyframes burstPulse{ from{ filter:brightness(1); } to{ filter:brightness(1.5); } }
+  .float-text{
+    position:absolute;
+    font-family:'Press Start 2P', monospace;
+    font-size:0.85rem;
+    color:var(--accent);
+    pointer-events:none;
+    animation:floatUp 0.9s ease-out forwards;
+    text-shadow:0 0 6px rgba(0,229,255,0.8);
+  }
+  @keyframes floatUp{
+    0%{ opacity:1; transform:translateY(0) scale(1); }
+    100%{ opacity:0; transform:translateY(-70px) scale(1.2); }
+  }
+
+  .click-particle{
+    position:absolute;
+    border-radius:2px;
+    pointer-events:none;
+    z-index:5;
+    box-shadow:0 0 10px 2px rgba(255,255,255,0.85), 0 0 4px rgba(0,0,0,0.4);
+    border:1px solid rgba(255,255,255,0.6);
+    animation:particleBurst 0.65s cubic-bezier(.25,.8,.35,1) forwards;
+  }
+  @keyframes particleBurst{
+    0%{ transform:translate(-50%,-50%) rotate(0deg) scale(1); opacity:1; }
+    65%{ opacity:1; }
+    100%{ transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)) scale(0.35); opacity:0; }
+  }
+  /* Sur mobile, le panneau de clic reste "collé" en haut de l'écran pendant
+     qu'on scrolle la boutique en dessous — on peut cliquer et acheter des
+     améliorations sans avoir à remonter/redescendre sans arrêt. */
+  @media (max-width:800px){
+    .game-layout{ grid-template-columns:1fr; }
+    .click-panel{
+      position:sticky;
+      top:8px;
+      z-index:30;
+      background:#1a1a2e;
+      box-shadow:0 14px 34px rgba(0,0,0,0.45);
+      padding:18px 18px 22px;
+      gap:10px;
+    }
+    .click-panel::after{
+      content:"";
+      position:absolute;
+      left:0; right:0; bottom:-14px;
+      height:14px;
+      background:linear-gradient(var(--panel), transparent);
+      pointer-events:none;
+    }
+    .click-zone{ width:150px; height:150px; }
+    .burst-3d{ width:108px; height:108px; }
+  }
+
+  .reset-btn{
+    display:block;
+    margin:4px auto 0;
+    background:none;
+    border:1px solid var(--border);
+    color:var(--muted);
+    padding:6px 14px;
+    border-radius:8px;
+    font-size:0.75rem;
+    cursor:pointer;
+  }
+  .reset-btn:hover{ border-color:#ff5e5e; color:#ff8e8e; }
+
+  .save-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .save-btn{
+    background:none;
+    border:1px solid var(--accent);
+    color:var(--accent);
+    padding:11px 16px;
+    min-height:44px;
+    border-radius:8px;
+    font-size:0.78rem;
+    font-weight:700;
+    cursor:pointer;
+    transition:all .15s;
+  }
+  .save-btn:hover{ background:var(--accent); color:#0f0c29; }
+  .autosave-label{
+    font-size:0.72rem;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    cursor:pointer;
+    margin:12px 0 4px;
+  }
+  .save-status{
+    font-size:0.68rem;
+    color:var(--muted);
+    text-align:center;
+    margin:10px 0 14px;
+  }
+
+  .shop-panel{
+    background:var(--panel);
+    border:2px solid var(--border);
+    border-radius:18px;
+    padding:16px;
+  }
+  .shop-panel h2{
+    font-family:'Press Start 2P', monospace;
+    font-size:0.85rem;
+    margin:4px 0 14px;
+    color:var(--accent2);
+  }
+  .upgrade-list{ display:flex; flex-direction:column; gap:10px; max-height:520px; overflow-y:auto; padding-right:4px; }
+  .upgrade{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    background:#22224488;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px 12px;
+    transition:border-color .15s, background .15s;
+  }
+  .upgrade.buyable{ border-color:var(--accent); }
+  .upgrade.buyable:hover{ background:#2a2a5088; }
+  .upgrade.locked{ opacity:0.45; }
+  .upgrade .info{ display:flex; flex-direction:column; gap:2px; }
+  .upgrade .name{ font-weight:700; font-size:0.92rem; }
+  .upgrade .desc{ font-size:0.75rem; color:var(--muted); }
+  .upgrade .level{ font-size:0.7rem; color:var(--accent); }
+  .upgrade button.buy{
+    font-family:'Press Start 2P', monospace;
+    font-size:0.65rem;
+    padding:14px 10px;
+    min-height:44px;
+    border-radius:10px;
+    border:none;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    color:#0f0c29;
+    cursor:pointer;
+    min-width:88px;
+    white-space:nowrap;
+  }
+  .upgrade button.buy:disabled{
+    background:#3a3a5c;
+    color:#7a7aa0;
+    cursor:not-allowed;
+  }
+
+  /* ---------- PIXELDEX TAB ---------- */
+  .dex-progress{
+    text-align:center;
+    margin-bottom:16px;
+    color:var(--muted);
+    font-size:0.9rem;
+  }
+  .dex-progress b{ color:var(--accent); }
+
+  .dex-columns{
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    padding-bottom:12px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .dex-column{
+    flex:0 0 190px;
+    background:var(--panel);
+    border:2px solid var(--border);
+    border-radius:14px;
+    display:flex;
+    flex-direction:column;
+    max-height:70vh;
+    overflow:hidden;
+  }
+  .dex-column-header{
+    position:sticky;
+    top:0;
+    background:#1a1a2ef2;
+    padding:10px 12px 8px;
+    border-bottom:2px solid var(--border);
+    font-family:'Press Start 2P', monospace;
+    font-size:0.6rem;
+    line-height:1.4;
+    z-index:2;
+  }
+  .dex-column-header .count{
+    display:block;
+    font-family:'Rubik', sans-serif;
+    font-weight:600;
+    font-size:0.68rem;
+    color:var(--muted);
+    margin-top:5px;
+  }
+  .tier-common .dex-column-header{ color:#bcbcbc; }
+  .tier-uncommon .dex-column-header{ color:#4ce07f; }
+  .tier-rare .dex-column-header{ color:#4ea1ff; }
+  .tier-epic .dex-column-header{ color:#c47bff; }
+  .tier-legendary .dex-column-header{ color:#ffd24e; }
+  .tier-mythic .dex-column-header{ color:#ff5eae; }
+  .tier-cosmic .dex-column-header{ color:#00e5ff; text-shadow:0 0 10px rgba(0,229,255,0.6); }
+
+  .dex-column-body{
+    overflow-y:auto;
+    padding:8px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+
+  .dex-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#22224466;
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:6px 8px;
+  }
+  .dex-item.found.tier-common{ border-color:#8a8aa0; }
+  .dex-item.found.tier-uncommon{ border-color:#4ce07f; box-shadow:0 0 8px rgba(76,224,127,0.25); }
+  .dex-item.found.tier-rare{ border-color:#4ea1ff; box-shadow:0 0 8px rgba(78,161,255,0.25); }
+  .dex-item.found.tier-epic{ border-color:#c47bff; box-shadow:0 0 10px rgba(196,123,255,0.3); }
+  .dex-item.found.tier-legendary{ border-color:#ffd24e; box-shadow:0 0 12px rgba(255,210,78,0.4); }
+  .dex-item.found.tier-mythic{ border-color:#ff5eae; box-shadow:0 0 14px rgba(255,94,174,0.5); }
+  .dex-item.found.tier-cosmic{ border-color:#00e5ff; box-shadow:0 0 16px rgba(0,229,255,0.6); }
+
+  .pixel-icon{ width:52px; height:52px; }
+  .pixel-icon.locked-icon{ background:#33334d; border-radius:10px; }
+  .dex-item .pixel-icon{ width:30px; height:30px; flex-shrink:0; }
+
+  .dex-item .item-text{ display:flex; flex-direction:column; gap:1px; overflow:hidden; min-width:0; }
+  .dex-item .pname{
+    font-size:0.66rem;
+    font-weight:700;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .dex-item .pchance{ font-size:0.58rem; color:var(--muted); }
+  .dex-item .pcount{ font-size:0.58rem; color:var(--accent); }
+  .dex-item.locked .pname, .dex-item.locked .pcount{ color:var(--muted); }
+
+  /* pixel shapes */
+  .shape-square{ background:var(--c1); }
+  .shape-round{ background:linear-gradient(135deg,var(--c1),var(--c2)); border-radius:12px; }
+  .pattern-stripes{ background-image:repeating-linear-gradient(45deg, var(--c1) 0 6px, var(--c2) 6px 12px); border-radius:8px; }
+  .pattern-dots{ background-color:var(--c1); background-image:radial-gradient(var(--c2) 26%, transparent 27%); background-size:33.334% 33.334%; background-position:center; border-radius:8px; }
+  .pattern-check{ background-image:conic-gradient(var(--c1) 90deg, var(--c2) 90deg 180deg, var(--c1) 180deg 270deg, var(--c2) 270deg); background-size:50% 50%; background-position:center; border-radius:8px; }
+  .pattern-camo{ background-image:radial-gradient(circle at 20% 20%, var(--c1) 15%, transparent 16%), radial-gradient(circle at 70% 60%, var(--c2) 20%, transparent 21%), radial-gradient(circle at 40% 80%, var(--c1) 18%, transparent 19%); background-color:var(--c2); border-radius:8px; }
+  .pattern-spiral{ background-image:repeating-conic-gradient(var(--c1) 0deg 20deg, var(--c2) 20deg 40deg); border-radius:50%; }
+  .pattern-halfsplit{ background:linear-gradient(90deg, var(--c1) 50%, var(--c2) 50%); border-radius:8px; }
+  .pattern-grid{ background-image:linear-gradient(var(--c2) 1px, transparent 1px), linear-gradient(90deg, var(--c2) 1px, transparent 1px); background-size:25% 25%; background-position:center; background-color:var(--c1); border-radius:8px; }
+  .pattern-radial{ background:radial-gradient(circle, var(--c1), var(--c2)); border-radius:8px; }
+  .pattern-chevron{ background-image:repeating-linear-gradient(45deg, var(--c1) 0 8px, var(--c2) 8px 16px), repeating-linear-gradient(-45deg, var(--c1) 0 8px, transparent 8px 16px); border-radius:8px; }
+  .pattern-diagonal{ background:linear-gradient(135deg, var(--c1) 50%, var(--c2) 50%); border-radius:8px; }
+  .pattern-rings{ background-image:repeating-radial-gradient(circle, var(--c1) 0 4px, var(--c2) 4px 8px); border-radius:50%; }
+  .shape-circle{ border-radius:50%; }
+
+  .epic-glow{ background:linear-gradient(135deg,var(--c1),var(--c2)); border-radius:10px; box-shadow:0 0 16px 3px var(--c1); animation:pulseGlow 1.4s ease-in-out infinite alternate; }
+  @keyframes pulseGlow{ from{ filter:brightness(1); } to{ filter:brightness(1.5); } }
+  .epic-galaxy{ background:linear-gradient(45deg,#5f27cd,#341f97,#ff9ff3,#48dbfb); background-size:300% 300%; border-radius:10px; animation:galaxyShift 3s ease infinite; box-shadow:0 0 14px rgba(150,100,255,0.5); }
+  @keyframes galaxyShift{ 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
+  .shape-diamond{ clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%); }
+  .epic-crystal{ background:linear-gradient(160deg,#dfffff,#7bdcff,#3ea0ff); box-shadow:0 0 16px rgba(120,220,255,0.6); }
+  .epic-plasma{ background:linear-gradient(60deg, var(--c1), var(--c2), var(--c1)); background-size:250% 250%; animation:galaxyShift 1.6s ease infinite; border-radius:10px; box-shadow:0 0 16px var(--c1); }
+  .epic-ghost{ background:radial-gradient(circle, var(--c1), transparent 75%); animation:ghostPulse 1.8s ease-in-out infinite; box-shadow:0 0 18px rgba(255,255,255,0.5); }
+  @keyframes ghostPulse{ 0%,100%{ opacity:0.35; } 50%{ opacity:0.95; } }
+  .epic-mirror{ background:linear-gradient(120deg, var(--c1) 0%, #ffffff 45%, var(--c1) 55%, var(--c1) 100%); background-size:250% 250%; animation:mirrorSweep 1.8s linear infinite; border-radius:10px; box-shadow:0 0 14px rgba(255,255,255,0.5); }
+  @keyframes mirrorSweep{ 0%{ background-position:200% 0; } 100%{ background-position:-50% 0; } }
+
+  .shape-hex{ clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%); }
+  .shape-triangle{ clip-path:polygon(50% 0%,0% 100%,100% 100%); }
+  .shape-star{ clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%); }
+  .shape-octagon{ clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%); }
+  .shape-pentagon{ clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%); }
+  .shape-cross{ clip-path:polygon(35% 0%,65% 0%,65% 35%,100% 35%,100% 65%,65% 65%,65% 100%,35% 100%,35% 65%,0% 65%,0% 35%,35% 35%); }
+
+  .legendary-icon{ background:linear-gradient(135deg,#fff6c8,gold,#c9860a); box-shadow:0 0 22px 5px rgba(255,210,60,0.7); animation:pulseGlow 1.1s ease-in-out infinite alternate; }
+  .legendary-icon-ruby{ background:linear-gradient(135deg,#ffd6d6,#ff4d4d,#8a0000); box-shadow:0 0 22px 5px rgba(255,60,60,0.7); animation:pulseGlow 1.1s ease-in-out infinite alternate; }
+  .legendary-icon-emerald{ background:linear-gradient(135deg,#d6ffe9,#2ecc71,#0b5b34); box-shadow:0 0 22px 5px rgba(46,204,113,0.7); animation:pulseGlow 1.1s ease-in-out infinite alternate; }
+  .mythic-icon{ background:conic-gradient(red,orange,yellow,green,blue,indigo,violet,red); animation:mythicSpin 2.2s linear infinite, pulseGlow 1s ease-in-out infinite alternate; box-shadow:0 0 26px 8px rgba(255,255,255,0.6); }
+  .mythic-eclipse{ background:radial-gradient(circle, #000 30%, #4b0082 65%, #000 100%); box-shadow:0 0 30px 10px rgba(139,0,255,0.65); animation:pulseGlow 1.6s ease-in-out infinite alternate; }
+  .mythic-phoenix{ background:linear-gradient(0deg,#ff0000,#ff7b00,#ffd500,#ff7b00,#ff0000); background-size:100% 300%; animation:phoenixFlame 1s linear infinite; box-shadow:0 0 26px 8px rgba(255,120,0,0.7); }
+  @keyframes phoenixFlame{ from{ background-position:0 0; } to{ background-position:0 -300%; } }
+  @keyframes mythicSpin{ from{ filter:hue-rotate(0deg) brightness(1); } to{ filter:hue-rotate(360deg) brightness(1.3); } }
+
+  .cosmic-icon{
+    background:linear-gradient(135deg, var(--c1), var(--c2), var(--c1));
+    background-size:220% 220%;
+    box-shadow:0 0 32px 10px var(--c1), inset 0 0 18px rgba(255,255,255,0.8);
+    animation:cosmicSpin3d 3.2s ease-in-out infinite, cosmicGradient 4s ease infinite;
+  }
+  @keyframes cosmicSpin3d{
+    0%{ transform:perspective(300px) rotateY(0deg) rotateX(10deg); }
+    50%{ transform:perspective(300px) rotateY(180deg) rotateX(-10deg); }
+    100%{ transform:perspective(300px) rotateY(360deg) rotateX(10deg); }
+  }
+  @keyframes cosmicGradient{ 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
+
+  /* Pixel Cookie — clin d'œil à Cookie Clicker, façon biscuit pixelisé */
+  .cookie-icon{
+    border-radius:50%;
+    background-image:
+      radial-gradient(circle at 25% 28%, #5c3a21 7%, transparent 8%),
+      radial-gradient(circle at 63% 20%, #5c3a21 6%, transparent 7%),
+      radial-gradient(circle at 80% 52%, #5c3a21 8%, transparent 9%),
+      radial-gradient(circle at 38% 62%, #5c3a21 6%, transparent 7%),
+      radial-gradient(circle at 58% 80%, #5c3a21 7%, transparent 8%),
+      radial-gradient(circle at 16% 58%, #5c3a21 5%, transparent 6%),
+      radial-gradient(circle at 45% 45%, #e8c39e, #c68642 55%, #a3672f 100%);
+    box-shadow:0 0 20px 6px rgba(0,229,255,0.5), 0 0 26px 8px rgba(255,78,205,0.35);
+    animation:pulseGlow 1.4s ease-in-out infinite alternate, cosmicSpin3d 3.2s ease-in-out infinite;
+  }
+
+  /* toast */
+  #toast-wrap{
+    position:fixed;
+    bottom:16px;
+    right:16px;
+    display:flex;
+    flex-direction:column-reverse;
+    gap:8px;
+    z-index:999;
+    max-width:calc(100vw - 32px);
+  }
+  .toast{
+    background:linear-gradient(120deg,#1a1a2e,#302b63);
+    border:2px solid var(--tier-color, var(--accent2));
+    border-radius:12px;
+    padding:10px 16px;
+    font-size:0.82rem;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    box-shadow:0 0 18px var(--tier-glow, rgba(255,78,205,0.35));
+    animation:toastIn 0.3s ease, toastOut 0.4s ease 3.4s forwards;
+    max-width:260px;
+  }
+  @keyframes toastIn{ from{ opacity:0; transform:translateX(40px); } to{ opacity:1; transform:translateX(0); } }
+  @keyframes toastOut{ to{ opacity:0; transform:translateX(40px); } }
+  .toast .ticon{ width:30px; height:30px; flex-shrink:0; }
+
+  ::-webkit-scrollbar{ width:8px; }
+  ::-webkit-scrollbar-thumb{ background:var(--border); border-radius:8px; }
+
+  /* ---------- OPTIONS TAB ---------- */
+  .options-panel{
+    max-width:420px;
+    margin:0 auto;
+    background:var(--panel);
+    border:2px solid var(--border);
+    border-radius:18px;
+    padding:18px 20px 22px;
+  }
+  .options-panel h2{
+    font-family:'Press Start 2P', monospace;
+    font-size:0.85rem;
+    margin:4px 0 16px;
+    color:var(--accent2);
+  }
+  .stats-panel{ max-width:520px; }
+  .stats-row{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:12px;
+    margin-bottom:6px;
+  }
+  .stat-block{
+    background:#22224466;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 8px;
+    text-align:center;
+  }
+  .stat-value{
+    font-family:'Press Start 2P', monospace;
+    font-size:0.95rem;
+    color:var(--accent);
+    margin-bottom:6px;
+    word-break:break-word;
+  }
+  .stat-label{ font-size:0.66rem; color:var(--muted); line-height:1.3; }
+  .option-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    padding:8px 0 4px;
+  }
+  .option-name{ font-weight:700; font-size:0.92rem; }
+  .option-desc{ font-size:0.75rem; color:var(--muted); }
+
+  .switch{ position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .switch-track{
+    position:absolute; inset:0; cursor:pointer;
+    background:#33334d; border:1px solid var(--border);
+    border-radius:26px; transition:background .2s;
+  }
+  .switch-track::before{
+    content:""; position:absolute; width:18px; height:18px;
+    left:3px; top:3px; background:#9a9ac4; border-radius:50%;
+    transition:transform .2s, background .2s;
+  }
+  .switch input:checked + .switch-track{ background:linear-gradient(90deg,var(--accent),var(--accent2)); border-color:transparent; }
+  .switch input:checked + .switch-track::before{ transform:translateX(20px); background:#0f0c29; }
+
+  .volume-slider{
+    width:100%;
+    margin:2px 0 18px;
+    accent-color:var(--accent);
+    height:4px;
+  }
+  .privacy-link{
+    text-align:center;
+    margin-top:20px;
+    padding-top:14px;
+    border-top:1px solid var(--border);
+  }
+  .privacy-link a{
+    color:var(--muted);
+    font-size:0.75rem;
+    text-decoration:underline;
+  }
+  .privacy-link a:hover{ color:var(--accent); }
+
+  /* ---------- COSMETICS TAB (coming soon) ---------- */
+  .coming-soon-panel{
+    max-width:420px;
+    margin:20px auto 0;
+    background:var(--panel);
+    border:2px solid var(--border);
+    border-radius:18px;
+    padding:40px 28px 34px;
+    text-align:center;
+  }
+  .coming-soon-icon{
+    width:70px; height:70px;
+    margin:0 auto 18px;
+    opacity:0.9;
+    animation:pulseGlow 1.4s ease-in-out infinite alternate;
+    filter:drop-shadow(0 0 14px rgba(0,229,255,0.5));
+  }
+  .coming-soon-icon svg{ width:100%; height:100%; }
+  .coming-soon-badge{
+    display:inline-block;
+    font-family:'Press Start 2P', monospace;
+    font-size:0.62rem;
+    letter-spacing:2px;
+    color:#0f0c29;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    padding:7px 16px;
+    border-radius:20px;
+    margin-bottom:16px;
+  }
+  .coming-soon-panel h2{
+    font-family:'Press Start 2P', monospace;
+    font-size:1rem;
+    margin:0 0 14px;
+    color:var(--text);
+  }
+  .coming-soon-panel p{
+    font-size:0.85rem;
+    color:var(--muted);
+    line-height:1.6;
+    margin:0 0 10px;
+  }
+  .coming-soon-sub{ font-size:0.75rem !important; }
+
+  .cosmetic-preview-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
+    gap:14px;
+    max-width:620px;
+    margin:16px auto 0;
+  }
+  .cosmetic-card{
+    background:var(--panel);
+    border:2px solid var(--border);
+    border-radius:16px;
+    padding:18px 14px;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    opacity:0.85;
+  }
+  .cosmetic-icon{
+    width:52px; height:52px;
+    border-radius:12px;
+    margin-bottom:4px;
+  }
+  .cosmetic-name{ font-weight:700; font-size:0.9rem; }
+  .cosmetic-badge{
+    font-family:'Press Start 2P', monospace;
+    font-size:0.5rem;
+    letter-spacing:1px;
+    color:#0f0c29;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    padding:4px 10px;
+    border-radius:14px;
+  }
+  .cosmetic-price{ font-size:0.72rem; color:var(--muted); line-height:1.4; }
+  .cosmetic-price b{ color:var(--accent); }
+  .cosmetic-buy-btn{
+    margin-top:6px;
+    font-family:'Rubik', sans-serif;
+    font-weight:700;
+    font-size:0.72rem;
+    padding:9px 14px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:none;
+    color:var(--muted);
+    cursor:not-allowed;
+    width:100%;
+  }
+
+  /* ---------- DAILY REWARD MODAL ---------- */
+  .reward-overlay{
+    position:fixed; inset:0;
+    background:rgba(6,6,18,0.82);
+    display:flex; align-items:center; justify-content:center;
+    z-index:1000;
+    padding:20px;
+  }
+  .reward-modal{
+    background:linear-gradient(160deg,#1a1a2e,#2a1f4a);
+    border:2px solid var(--accent2);
+    border-radius:22px;
+    padding:28px 26px 24px;
+    max-width:280px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 0 50px rgba(255,78,205,0.4);
+    animation:rewardPop 0.35s ease;
+  }
+  @keyframes rewardPop{
+    from{ opacity:0; transform:scale(0.85); }
+    to{ opacity:1; transform:scale(1); }
+  }
+  .reward-day{
+    font-family:'Press Start 2P', monospace;
+    font-size:0.8rem;
+    color:var(--accent);
+    margin-bottom:14px;
+  }
+  .reward-icon{
+    width:64px; height:64px;
+    margin:0 auto 16px;
+    border-radius:14px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    box-shadow:0 0 30px rgba(0,229,255,0.5);
+    animation:pulseGlow 1.1s ease-in-out infinite alternate;
+  }
+  .reward-icon.big{ box-shadow:0 0 40px 10px rgba(255,210,60,0.7); background:linear-gradient(135deg,#fff6c8,gold,#c9860a); }
+  .reward-icon.mega{ box-shadow:0 0 46px 14px rgba(255,94,174,0.8); background:conic-gradient(red,orange,yellow,green,blue,indigo,violet,red); animation:mythicSpin 2s linear infinite, pulseGlow 1s ease-in-out infinite alternate; }
+  .reward-text{ font-size:0.88rem; color:var(--text); line-height:1.6; margin-bottom:20px; }
+  .reward-text b{ color:var(--accent); }
+  .reward-claim-btn{
+    font-family:'Press Start 2P', monospace;
+    font-size:0.7rem;
+    padding:12px 26px;
+    border-radius:12px;
+    border:none;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    color:#0f0c29;
+    cursor:pointer;
+  }
+  .save-code-area{
+    width:100%;
+    height:80px;
+    resize:none;
+    background:#0f0c29;
+    border:1px solid var(--border);
+    border-radius:10px;
+    color:var(--accent);
+    font-family:monospace;
+    font-size:0.7rem;
+    padding:8px;
+    margin:10px 0 14px;
+    word-break:break-all;
+  }
+
+  /* ---------- REWARDS TIMELINE TAB ---------- */
+  .reward-timeline{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    padding:6px 4px 18px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .reward-day-card{
+    flex:0 0 88px;
+    background:var(--panel);
+    border:2px solid var(--border);
+    border-radius:14px;
+    padding:12px 8px 10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:7px;
+    text-align:center;
+    opacity:0.5;
+  }
+  .reward-day-card .day-icon{ width:34px; height:34px; }
+  .reward-day-card .day-icon .box{ fill:#555577; }
+  .reward-day-card .day-icon .ribbon{ fill:#3f3f5c; }
+  .reward-day-card.unlocked{
+    opacity:1;
+    border-color:var(--accent);
+    box-shadow:0 0 12px rgba(0,229,255,0.25);
+  }
+  .reward-day-card.unlocked .day-icon .box{ fill:#00e5ff; }
+  .reward-day-card.unlocked .day-icon .ribbon{ fill:#ff4ecd; }
+  .reward-day-card.current{
+    border-color:#ffd24e;
+    box-shadow:0 0 18px rgba(255,210,78,0.55);
+    animation:pulseGlow 1.2s ease-in-out infinite alternate;
+  }
+  .reward-day-card.tier-common.unlocked{ border-color:#bcbcbc; }
+  .reward-day-card.tier-uncommon.unlocked{ border-color:#4ce07f; box-shadow:0 0 16px rgba(76,224,127,0.4); }
+  .reward-day-card.tier-rare.unlocked{ border-color:#4ea1ff; box-shadow:0 0 16px rgba(78,161,255,0.4); }
+  .reward-day-card .day-label{ font-size:0.66rem; font-weight:700; color:var(--muted); }
+  .reward-day-card.unlocked .day-label{ color:var(--text); }
+  .reward-day-card .day-amount{ font-size:0.62rem; color:var(--accent); }
+  .reward-day-card .day-bonus{ font-size:0.58rem; color:#ffd24e; }
+</style>
+</head>
+<body>
+
+<div id="toast-wrap"></div>
+
+<header>
+  <h1>
+    <svg class="title-logo" viewBox="0 0 5 5" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="2" height="2" fill="#00e5ff"/>
+      <rect x="3" y="0" width="2" height="2" fill="#ff4ecd"/>
+      <rect x="0" y="3" width="2" height="2" fill="#f1c40f"/>
+      <rect x="3" y="3" width="2" height="2" fill="#2ecc71"/>
+    </svg>
+    PIXEL CLICKER
+    <svg class="title-logo" viewBox="0 0 5 5" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="2" height="2" fill="#00e5ff"/>
+      <rect x="3" y="0" width="2" height="2" fill="#ff4ecd"/>
+      <rect x="0" y="3" width="2" height="2" fill="#f1c40f"/>
+      <rect x="3" y="3" width="2" height="2" fill="#2ecc71"/>
+    </svg>
+  </h1>
+  <div class="stats-bar">
+    <div><span class="pix-count" id="stat-pixels">0</span> pixels</div>
+    <div>Par clic : <b id="stat-cpc">1</b></div>
+    <div>Par seconde : <b id="stat-cps">0</b></div>
+    <div>Pixels trouvés : <b id="stat-found">0</b>/<span id="stat-total-types">0</span></div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="active" data-tab="game">
+    <svg class="icon-mark" viewBox="0 0 3 3" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="3" height="3" fill="#00e5ff"/>
+      <rect x="0.9" y="0.9" width="1.2" height="1.2" fill="#0f0c29"/>
+    </svg>
+    Jeu
+  </button>
+  <button data-tab="dex">
+    <svg class="icon-mark" viewBox="0 0 5 5" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="2" height="2" fill="#00e5ff"/>
+      <rect x="3" y="0" width="2" height="2" fill="#ff4ecd"/>
+      <rect x="0" y="3" width="2" height="2" fill="#f1c40f"/>
+      <rect x="3" y="3" width="2" height="2" fill="#2ecc71"/>
+    </svg>
+    Pixeldex
+  </button>
+  <button data-tab="options">
+    <svg class="icon-mark" viewBox="0 0 9 9" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="0" width="3" height="1" fill="#00e5ff"/>
+      <rect x="2" y="1" width="5" height="1" fill="#00e5ff"/>
+      <rect x="1" y="2" width="7" height="1" fill="#00e5ff"/>
+      <rect x="0" y="3" width="3" height="1" fill="#00e5ff"/>
+      <rect x="6" y="3" width="3" height="1" fill="#00e5ff"/>
+      <rect x="0" y="4" width="3" height="1" fill="#00e5ff"/>
+      <rect x="6" y="4" width="3" height="1" fill="#00e5ff"/>
+      <rect x="0" y="5" width="3" height="1" fill="#00e5ff"/>
+      <rect x="6" y="5" width="3" height="1" fill="#00e5ff"/>
+      <rect x="1" y="6" width="7" height="1" fill="#00e5ff"/>
+      <rect x="2" y="7" width="5" height="1" fill="#00e5ff"/>
+      <rect x="3" y="8" width="3" height="1" fill="#00e5ff"/>
+    </svg>
+    Options
+  </button>
+  <button data-tab="rewards">
+    <svg class="icon-mark" viewBox="0 0 7 7" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="0" width="1" height="1" fill="#ff4ecd"/>
+      <rect x="5" y="0" width="1" height="1" fill="#ff4ecd"/>
+      <rect x="0" y="1" width="7" height="1" fill="#00e5ff"/>
+      <rect x="0" y="2" width="3" height="5" fill="#00e5ff"/>
+      <rect x="4" y="2" width="3" height="5" fill="#00e5ff"/>
+      <rect x="3" y="0" width="1" height="7" fill="#ff4ecd"/>
+      <rect x="0" y="4" width="7" height="1" fill="#ff4ecd"/>
+    </svg>
+    Récompenses
+  </button>
+  <button data-tab="cosmetics">
+    <svg class="icon-mark" viewBox="0 0 3 3" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="1.5" height="3" fill="#ff4ecd"/>
+      <rect x="1.5" y="0" width="1.5" height="3" fill="#00e5ff"/>
+    </svg>
+    Cosmétiques
+  </button>
+  <button data-tab="stats">
+    <svg class="icon-mark" viewBox="0 0 5 5" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="2" width="1" height="3" fill="#00e5ff"/>
+      <rect x="2" y="1" width="1" height="4" fill="#ff4ecd"/>
+      <rect x="4" y="0" width="1" height="5" fill="#f1c40f"/>
+    </svg>
+    Statistiques
+  </button>
+</nav>
+
+<main>
+
+  <section id="tab-game" class="game-layout">
+    <div class="click-panel">
+      <div class="click-zone" id="click-zone">
+        <div class="burst-3d">
+          <div class="core"></div>
+          <div class="chip"></div><div class="chip"></div><div class="chip"></div>
+          <div class="chip"></div><div class="chip"></div><div class="chip"></div><div class="chip"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="shop-panel">
+      <h2>AMÉLIORATIONS</h2>
+      <div class="upgrade-list" id="upgrade-list"></div>
+    </div>
+  </section>
+
+  <section id="tab-dex" style="display:none;">
+    <div class="dex-progress">Collection : <b id="dex-progress-text">0 / 0</b> types de pixels découverts</div>
+    <div id="dex-container"></div>
+  </section>
+
+  <section id="tab-options" style="display:none;">
+    <div class="options-panel">
+      <h2>SON</h2>
+
+      <div class="option-row">
+        <div class="option-info">
+          <div class="option-name">Musique</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="music-toggle" checked>
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <input type="range" id="music-volume" class="volume-slider" min="0" max="100" value="25">
+
+      <div class="option-row">
+        <div class="option-info">
+          <div class="option-name">Ambiance</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="sfx-toggle" checked>
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <input type="range" id="sfx-volume" class="volume-slider" min="0" max="100" value="45">
+
+      <h2 style="margin-top:22px;">MOBILE</h2>
+      <div class="option-row">
+        <div class="option-info">
+          <div class="option-name">Vibration</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="vibration-toggle" checked>
+          <span class="switch-track"></span>
+        </label>
+      </div>
+
+      <h2 style="margin-top:22px;">SAUVEGARDE</h2>
+      <div class="save-row">
+        <button class="save-btn" id="save-btn">
+          <svg class="icon-mark" viewBox="0 0 5 5" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="0" width="1" height="2" fill="#00e5ff"/>
+            <rect x="0" y="2" width="5" height="1" fill="#00e5ff"/>
+            <rect x="1" y="3" width="3" height="1" fill="#00e5ff"/>
+            <rect x="2" y="4" width="1" height="1" fill="#00e5ff"/>
+          </svg>
+          Sauvegarder
+        </button>
+        <button class="save-btn" id="load-btn">
+          <svg class="icon-mark" viewBox="0 0 5 5" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="0" width="1" height="1" fill="#ff4ecd"/>
+            <rect x="1" y="1" width="3" height="1" fill="#ff4ecd"/>
+            <rect x="0" y="2" width="5" height="1" fill="#ff4ecd"/>
+            <rect x="2" y="3" width="1" height="2" fill="#ff4ecd"/>
+          </svg>
+          Charger
+        </button>
+      </div>
+      <label class="autosave-label"><input type="checkbox" id="autosave-toggle"> Sauvegarde auto</label>
+      <div class="save-row" style="margin-top:14px;">
+        <button class="save-btn" id="export-btn">
+          <svg class="icon-mark" viewBox="0 0 3 3" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="3" height="3" fill="#f1c40f"/>
+          </svg>
+          Exporter un code
+        </button>
+        <button class="save-btn" id="import-btn">
+          <svg class="icon-mark" viewBox="0 0 3 3" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="3" height="3" fill="#2ecc71"/>
+          </svg>
+          Importer un code
+        </button>
+      </div>
+      <div class="save-status" id="save-status">Aucune sauvegarde chargée</div>
+      <button class="reset-btn" id="reset-btn">Réinitialiser la partie</button>
+
+      <div class="privacy-link">
+        <a href="politique-confidentialite.html" target="_blank" rel="noopener">Politique de confidentialité</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-rewards" style="display:none;">
+    <div class="dex-progress">Série actuelle : <b id="reward-streak-text">Jour 0</b> — reviens chaque jour pour progresser !</div>
+    <div class="reward-timeline" id="reward-timeline"></div>
+  </section>
+
+  <section id="tab-cosmetics" style="display:none;">
+    <div class="coming-soon-panel">
+      <div class="coming-soon-icon">
+        <svg viewBox="0 0 9 9" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="0" width="3" height="3" fill="#ff4ecd"/>
+          <rect x="0" y="3" width="3" height="3" fill="#f1c40f"/>
+          <rect x="3" y="3" width="3" height="3" fill="#00e5ff"/>
+          <rect x="6" y="3" width="3" height="3" fill="#2ecc71"/>
+          <rect x="3" y="6" width="3" height="3" fill="#9b59b6"/>
+        </svg>
+      </div>
+      <div class="coming-soon-badge">À VENIR</div>
+      <h2>Cosmétiques</h2>
+      <p>Personnalise l'apparence de ta zone de clic, débloque des thèmes de couleurs et des effets exclusifs grâce à tes pixels.</p>
+      <p class="coming-soon-sub">Cette section est en préparation — reviens plus tard pour la découvrir !</p>
+    </div>
+
+    <div class="cosmetic-preview-grid">
+      <div class="cosmetic-card">
+        <div class="cosmetic-icon epic-plasma" style="--c1:#00e5ff;--c2:#ff4ecd;"></div>
+        <div class="cosmetic-name">Thème Prisme</div>
+        <div class="cosmetic-badge">À VENIR</div>
+        <div class="cosmetic-price">Coût prévu : <b>50×</b> Pixel Commun aléatoire</div>
+        <button class="cosmetic-buy-btn" disabled>Bientôt disponible</button>
+      </div>
+      <div class="cosmetic-card">
+        <div class="cosmetic-icon legendary-icon shape-hex"></div>
+        <div class="cosmetic-name">Halo Éclat</div>
+        <div class="cosmetic-badge">À VENIR</div>
+        <div class="cosmetic-price">Coût prévu : <b>25×</b> Pixel Peu Commun aléatoire</div>
+        <button class="cosmetic-buy-btn" disabled>Bientôt disponible</button>
+      </div>
+      <div class="cosmetic-card">
+        <div class="cosmetic-icon mythic-icon shape-octagon"></div>
+        <div class="cosmetic-name">Traînée Nova</div>
+        <div class="cosmetic-badge">À VENIR</div>
+        <div class="cosmetic-price">Coût prévu : <b>1×</b> Pixel Épique</div>
+        <button class="cosmetic-buy-btn" disabled>Bientôt disponible</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-stats" style="display:none;">
+    <div class="options-panel stats-panel">
+      <h2>STATISTIQUES</h2>
+      <div class="stats-row">
+        <div class="stat-block">
+          <div class="stat-value" id="stat-session-clicks">0</div>
+          <div class="stat-label">Clics cette session</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-total-clicks">0</div>
+          <div class="stat-label">Clics au total</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-session-time">00:00</div>
+          <div class="stat-label">Temps de jeu (session)</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-total-time">0 s</div>
+          <div class="stat-label">Temps de jeu total</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-lifetime-pixels">0</div>
+          <div class="stat-label">Pixels gagnés au total</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-upgrades-bought">0</div>
+          <div class="stat-label">Améliorations achetées</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-best-streak">0 / 31</div>
+          <div class="stat-label">Meilleure série de connexion</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-first-play">—</div>
+          <div class="stat-label">Joueur depuis</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="reward-overlay" class="reward-overlay" style="display:none;">
+  <div class="reward-modal">
+    <div class="reward-day">Jour <span id="reward-day-num">1</span></div>
+    <div class="reward-icon" id="reward-icon"></div>
+    <div class="reward-text" id="reward-text"></div>
+    <button class="reward-claim-btn" id="reward-claim-btn">Récupérer</button>
+  </div>
+</div>
+
+<div id="offline-overlay" class="reward-overlay" style="display:none;">
+  <div class="reward-modal">
+    <div class="reward-day">Bon retour !</div>
+    <div class="reward-icon" id="offline-icon"></div>
+    <div class="reward-text" id="offline-text"></div>
+    <button class="reward-claim-btn" id="offline-claim-btn">Récupérer</button>
+  </div>
+</div>
+
+<div id="export-overlay" class="reward-overlay" style="display:none;">
+  <div class="reward-modal">
+    <div class="reward-day">Code de sauvegarde</div>
+    <div class="reward-text">Copie ce code et garde-le en lieu sûr (notes, email...). Tu pourras t'en servir pour restaurer ta partie via "Importer un code".</div>
+    <textarea id="export-code" class="save-code-area" readonly onclick="this.select()"></textarea>
+    <button class="reward-claim-btn" id="export-copy-btn">Copier le code</button>
+    <button class="reset-btn" id="export-close-btn" style="margin-top:10px;">Fermer</button>
+  </div>
+</div>
+
+<div id="import-overlay" class="reward-overlay" style="display:none;">
+  <div class="reward-modal">
+    <div class="reward-day">Importer une sauvegarde</div>
+    <div class="reward-text">Colle ci-dessous un code exporté précédemment. Cela remplacera ta progression actuelle.</div>
+    <textarea id="import-code" class="save-code-area" placeholder="Colle ton code ici..."></textarea>
+    <button class="reward-claim-btn" id="import-confirm-btn">Importer</button>
+    <button class="reset-btn" id="import-close-btn" style="margin-top:10px;">Annuler</button>
+  </div>
+</div>
+
+<script>
+/* ================= DATA ================= */
+
+// --- Génère les 256 couleurs "classiques" (palette xterm/ANSI 256 couleurs) ---
+const BASE16_COLORS = [
+  ['Noir','#000000'], ['Marron','#800000'], ['Vert Foncé','#008000'], ['Olive','#808000'],
+  ['Marine','#000080'], ['Violet Foncé','#800080'], ['Sarcelle','#008080'], ['Argent Clair','#c0c0c0'],
+  ['Gris','#808080'], ['Rouge Vif','#ff0000'], ['Vert Citron','#00ff00'], ['Jaune Vif','#ffff00'],
+  ['Bleu Vif','#0000ff'], ['Fuchsia','#ff00ff'], ['Cyan Vif','#00ffff'], ['Blanc Pur','#ffffff'],
+];
+function generateCommonPixels(){
+  const list = [];
+  const seenHex = new Set();
+
+  // Ajuste très légèrement une couleur déjà utilisée pour qu'elle reste
+  // dans la même famille tout en étant visuellement distincte (évite les
+  // doublons stricts que produit la vraie palette 256 couleurs, où
+  // certaines teintes du cube tombent exactement sur les 16 couleurs de base).
+  function dedupe(hex){
+    let h = hex;
+    let guard = 0;
+    while(seenHex.has(h) && guard < 20){
+      const r = parseInt(h.slice(1,3),16), g = parseInt(h.slice(3,5),16), b = parseInt(h.slice(5,7),16);
+      const shift = 14 + guard * 6;
+      const nr = Math.min(255, Math.max(0, r + (r < 128 ? shift : -shift)));
+      const ng = Math.min(255, Math.max(0, g + (g < 128 ? shift : -shift)));
+      const nb = Math.min(255, Math.max(0, b + (b < 128 ? shift : -shift)));
+      h = '#' + [nr,ng,nb].map(v=>v.toString(16).padStart(2,'0')).join('');
+      guard++;
+    }
+    seenHex.add(h);
+    return h;
+  }
+
+  BASE16_COLORS.forEach((c,i)=>{
+    const hex = dedupe(c[1]);
+    list.push({ id:'c'+String(i).padStart(3,'0'), name:'Pixel '+c[0], tier:'common', weight:0.1, shape:'shape-square', c1:hex, c2:hex });
+  });
+  const levels = [0,95,135,175,215,255];
+  let idx = 16;
+  for(let r=0;r<6;r++) for(let g=0;g<6;g++) for(let b=0;b<6;b++){
+    const hex = dedupe('#' + [levels[r],levels[g],levels[b]].map(v=>v.toString(16).padStart(2,'0')).join(''));
+    list.push({ id:'c'+String(idx).padStart(3,'0'), name:'Pixel Couleur #'+String(idx).padStart(3,'0'), tier:'common', weight:0.1, shape:'shape-square', c1:hex, c2:hex });
+    idx++;
+  }
+  for(let i=0;i<24;i++){
+    const v = 8 + i*10;
+    const hex = dedupe('#' + [v,v,v].map(x=>x.toString(16).padStart(2,'0')).join(''));
+    list.push({ id:'c'+String(idx).padStart(3,'0'), name:'Pixel Gris #'+String(idx).padStart(3,'0'), tier:'common', weight:0.1, shape:'shape-square', c1:hex, c2:hex });
+    idx++;
+  }
+  return list; // 16 + 216 + 24 = 256 pixels, tous visuellement uniques
+}
+
+const PIXEL_TYPES = [
+  // COMMON — les 256 couleurs classiques (palette 256 couleurs), 0.1% / clic chacune
+  ...generateCommonPixels(),
+
+  // UNCOMMON — 30 minéraux, 0.05% / clic chacun
+  { id:'u01', name:'Pixel Or',           tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#fff6c8', c2:'#d4a017' },
+  { id:'u02', name:'Pixel Argent',       tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#f4f4f4', c2:'#9ea7ad' },
+  { id:'u03', name:'Pixel Bronze',       tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#d7ba89', c2:'#6b4423' },
+  { id:'u04', name:'Pixel Cuivre',       tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#f0b27a', c2:'#8b4513' },
+  { id:'u05', name:'Pixel Platine',      tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#e5e4e2', c2:'#a8a8a8' },
+  { id:'u06', name:'Pixel Fer',          tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#c7c7c7', c2:'#4a4a4a' },
+  { id:'u07', name:'Pixel Titane',       tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#dfe6e9', c2:'#485460' },
+  { id:'u08', name:'Pixel Émeraude',     tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#7dffb3', c2:'#00695c' },
+  { id:'u09', name:'Pixel Rubis',        tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#ff9a9e', c2:'#a10021' },
+  { id:'u10', name:'Pixel Saphir',       tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#a1c4fd', c2:'#1a3fa0' },
+  { id:'u11', name:'Pixel Améthyste',    tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#e0c3fc', c2:'#8e44ad' },
+  { id:'u12', name:'Pixel Topaze',       tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#ffe9a8', c2:'#e0a92e' },
+  { id:'u13', name:'Pixel Diamant',      tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#e8fbff', c2:'#7fd8ff' },
+  { id:'u14', name:'Pixel Opale',        tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#fbe9ff', c2:'#b0e0e6' },
+  { id:'u15', name:'Pixel Jade',         tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#b6f2d1', c2:'#1f7a53' },
+  { id:'u16', name:'Pixel Obsidienne',   tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#3a3a3a', c2:'#000000' },
+  { id:'u17', name:'Pixel Quartz',       tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#ffffff', c2:'#d8d8e0' },
+  { id:'u18', name:'Pixel Malachite',    tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#3ddc84', c2:'#0b3d20' },
+  { id:'u19', name:'Pixel Turquoise',    tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#40e0d0', c2:'#12756b' },
+  { id:'u20', name:'Pixel Grenat',       tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#f2545b', c2:'#7a0d17' },
+  { id:'u21', name:'Pixel Aigue-marine', tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#c1fffa', c2:'#3fc1c9' },
+  { id:'u22', name:'Pixel Péridot',      tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#d4ff6b', c2:'#7a9e1e' },
+  { id:'u23', name:'Pixel Lapis-lazuli', tier:'uncommon', weight:0.05, shape:'pattern-dots',  c1:'#1b2a6b', c2:'#f1c40f' },
+  { id:'u24', name:'Pixel Pyrite',       tier:'uncommon', weight:0.05, shape:'pattern-check', c1:'#d4af37', c2:'#8a6d1a' },
+  { id:'u25', name:'Pixel Hématite',     tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#8b8b8b', c2:'#2f2f2f' },
+  { id:'u26', name:'Pixel Cobalt',       tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#3b5bdb', c2:'#0b1d6b' },
+  { id:'u27', name:'Pixel Nickel',       tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#d9d9d9', c2:'#7a7a7a' },
+  { id:'u28', name:'Pixel Zinc',         tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#cfd8dc', c2:'#607d8b' },
+  { id:'u29', name:'Pixel Mercure',      tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#f0f0f0', c2:'#5a5a5a' },
+  { id:'u30', name:'Pixel Uranium',      tier:'uncommon', weight:0.05, shape:'shape-round', c1:'#c6ff4d', c2:'#4d6b0a' },
+
+  // RARE — 15 pixels aux caractéristiques graphiques simples, 0.02% / clic chacun
+  { id:'r01', name:'Pixel Rayé',          tier:'rare', weight:0.02, shape:'pattern-stripes',   c1:'#ff5e5e', c2:'#ffffff' },
+  { id:'r02', name:'Pixel à Pois',        tier:'rare', weight:0.02, shape:'pattern-dots',      c1:'#3498db', c2:'#f1c40f' },
+  { id:'r03', name:'Pixel Damier',        tier:'rare', weight:0.02, shape:'pattern-check',     c1:'#111111', c2:'#eeeeee' },
+  { id:'r04', name:'Pixel Camouflage',    tier:'rare', weight:0.02, shape:'pattern-camo',      c1:'#4b5320', c2:'#6b8e23' },
+  { id:'r05', name:'Pixel Zébré',         tier:'rare', weight:0.02, shape:'pattern-stripes',   c1:'#111111', c2:'#f4f4f4' },
+  { id:'r06', name:'Pixel Spirale',       tier:'rare', weight:0.02, shape:'pattern-spiral',    c1:'#ff9ff3', c2:'#48dbfb' },
+  { id:'r07', name:'Pixel Vitrail',       tier:'rare', weight:0.02, shape:'pattern-check',     c1:'#e74c3c', c2:'#3498db' },
+  { id:'r08', name:'Pixel Écailles',      tier:'rare', weight:0.02, shape:'pattern-dots',      c1:'#0b5b34', c2:'#7dffb3' },
+  { id:'r09', name:'Pixel Marbré',        tier:'rare', weight:0.02, shape:'pattern-spiral',    c1:'#2c3e50', c2:'#ecf0f1' },
+  { id:'r10', name:'Pixel Bicolore',      tier:'rare', weight:0.02, shape:'pattern-halfsplit', c1:'#e74c3c', c2:'#2ecc71' },
+  { id:'r11', name:'Pixel Quadrillé',     tier:'rare', weight:0.02, shape:'pattern-grid',      c1:'#3498db', c2:'#111111' },
+  { id:'r12', name:'Pixel Dégradé Radial',tier:'rare', weight:0.02, shape:'pattern-radial',    c1:'#f1c40f', c2:'#e74c3c' },
+  { id:'r13', name:'Pixel Chevrons',      tier:'rare', weight:0.02, shape:'pattern-chevron',   c1:'#9b59b6', c2:'#f4f4f4' },
+  { id:'r14', name:'Pixel Diagonal',      tier:'rare', weight:0.02, shape:'pattern-diagonal',  c1:'#1abc9c', c2:'#2c3e50' },
+  { id:'r15', name:'Pixel Anneaux',       tier:'rare', weight:0.02, shape:'pattern-rings',     c1:'#ff6b9d', c2:'#ffffff' },
+
+  // EPIC — effects (0.006% / clic chacun)
+  { id:'e1', name:'Pixel Néon',      tier:'epic', weight:0.006, shape:'epic-glow',   c1:'#00e5ff', c2:'#ff4ecd' },
+  { id:'e2', name:'Pixel Galaxie',   tier:'epic', weight:0.006, shape:'epic-galaxy', c1:'#5f27cd', c2:'#48dbfb' },
+  { id:'e3', name:'Pixel Cristal',   tier:'epic', weight:0.006, shape:'shape-diamond epic-crystal', c1:'#dfffff', c2:'#3ea0ff' },
+  { id:'e4', name:'Pixel Plasma',    tier:'epic', weight:0.006, shape:'epic-plasma',  c1:'#ff4ecd', c2:'#7d5fff' },
+  { id:'e5', name:'Pixel Électrique',tier:'epic', weight:0.006, shape:'epic-glow',    c1:'#fff700', c2:'#00e5ff' },
+  { id:'e6', name:'Pixel Fantôme',   tier:'epic', weight:0.006, shape:'shape-round epic-ghost', c1:'#e8faff', c2:'#e8faff' },
+  { id:'e7', name:'Pixel Miroir',    tier:'epic', weight:0.006, shape:'epic-mirror',  c1:'#b0c4de', c2:'#b0c4de' },
+
+  // LEGENDARY — special shapes, très faible taux de drop (0.0005% / clic chacun)
+  { id:'l1', name:'Pixel Hexagonal',      tier:'legendary', weight:0.0002, shape:'shape-hex legendary-icon' },
+  { id:'l2', name:'Pixel Triangulaire',   tier:'legendary', weight:0.0002, shape:'shape-triangle legendary-icon' },
+  { id:'l3', name:'Pixel Étoilé',         tier:'legendary', weight:0.0002, shape:'shape-star legendary-icon' },
+  { id:'l4', name:'Pixel Pentagonal',     tier:'legendary', weight:0.0002, shape:'shape-pentagon legendary-icon-ruby' },
+  { id:'l5', name:'Pixel Croix Sacrée',   tier:'legendary', weight:0.0002, shape:'shape-cross legendary-icon-emerald' },
+  { id:'l6', name:'Pixel Losange Royal',  tier:'legendary', weight:0.0002, shape:'shape-diamond legendary-icon' },
+
+  // MYTHIC — extrêmement rare (0.0001% / clic chacun)
+  { id:'m1', name:'Pixel Quantique', tier:'mythic', weight:0.00005, shape:'shape-octagon mythic-icon' },
+  { id:'m2', name:'Pixel Éclipse',   tier:'mythic', weight:0.00005, shape:'shape-circle mythic-eclipse' },
+  { id:'m3', name:'Pixel Phénix',    tier:'mythic', weight:0.00005, shape:'shape-triangle mythic-phoenix' },
+
+  // COSMIQUE — la rareté ultime, effet 3D (0.00001% / clic)
+  { id:'x1', name:'Pixel Dimensionnel', tier:'cosmic', weight:0.00001, shape:'shape-round cosmic-icon', c1:'#00e5ff', c2:'#ff4ecd' },
+  { id:'x2', name:'Pixel Cookie', tier:'cosmic', weight:0.00001, shape:'cookie-icon' },
+];
+
+const TIER_LABELS = {
+  common:'Commun', uncommon:'Peu commun', rare:'Rare',
+  epic:'Épique', legendary:'Légendaire', mythic:'Mythique', cosmic:'Cosmique'
+};
+const TIER_ORDER = ['common','uncommon','rare','epic','legendary','mythic','cosmic'];
+
+const UPGRADES = [
+  { id:'cursor',    name:'Curseur Auto',           desc:'+0.5 pixel / sec',       baseCost:15,      effect:'auto',  value:0.5 },
+  { id:'doubleclick', name:'Gant Renforcé',         desc:'+1 pixel / clic',        baseCost:100,     effect:'click', value:1 },
+  { id:'bot',       name:'Bot Collecteur',          desc:'+2 pixels / sec',        baseCost:500,     effect:'auto',  value:2 },
+  { id:'brush',     name:'Pinceau Amélioré',        desc:'+5 pixels / clic',       baseCost:2000,    effect:'click', value:5 },
+  { id:'factory',   name:'Usine à Pixels',          desc:'+15 pixels / sec',       baseCost:10000,   effect:'auto',  value:15 },
+  { id:'detector',  name:'Détecteur de Rareté',     desc:'×1.5 chance de trouvailles rares (5 niv. max)', baseCost:25000, effect:'luck', value:0.5, maxLevel:5 },
+  { id:'megabrush', name:'Méga Pinceau',            desc:'+30 pixels / clic',      baseCost:100000,  effect:'click', value:30 },
+  { id:'quantum',   name:'Superordinateur Quantique', desc:'+120 pixels / sec',    baseCost:500000,  effect:'auto',  value:120 },
+  { id:'luckamp',   name:'Amplificateur de Chance', desc:'×2 chance de trouvailles rares (3 niv. max)', baseCost:1000000, effect:'luck', value:1, maxLevel:3 },
+];
+
+/* ================= STATE ================= */
+
+function freshState(){
+  return {
+    pixels:0,
+    clickPower:1,
+    autoPower:0,
+    luckMult:1,
+    upgradeLevels:{},
+    inventory:{},
+    lastLoginDate:null,
+    loginStreak:0,
+    totalClicks:0,
+    totalPixelsEarned:0,
+    totalPlaytimeSeconds:0,
+    firstPlayDate:null,
+    bestLoginStreak:0,
+  };
+}
+let state = freshState();
+let sessionClicks = 0;      // ne se persiste pas, repart de 0 à chaque ouverture
+let sessionSeconds = 0;     // idem, chrono de la session en cours
+
+/* ================= HELPERS ================= */
+
+function fmt(n){
+  if(n < 1000) return (Number.isInteger(n) ? n : n.toFixed(1)).toString();
+  const units = ['k','M','B','T','Qa','Qi'];
+  let u = -1;
+  let num = n;
+  while(num >= 1000 && u < units.length-1){ num/=1000; u++; }
+  return num.toFixed(2) + units[u];
+}
+
+function upgradeCost(u){
+  const lvl = state.upgradeLevels[u.id] || 0;
+  return Math.round(u.baseCost * Math.pow(1.15, lvl));
+}
+
+function formatChance(c){
+  let decimals;
+  if(c >= 1) decimals = 2;
+  else if(c >= 0.01) decimals = 3;
+  else if(c >= 0.0001) decimals = 5;
+  else decimals = 7;
+  return parseFloat(c.toFixed(decimals)) + '%';
+}
+
+/* ================= RENDER ================= */
+
+function updateStats(){
+  document.getElementById('stat-pixels').textContent = fmt(Math.floor(state.pixels));
+  document.getElementById('stat-cpc').textContent = fmt(state.clickPower);
+  document.getElementById('stat-cps').textContent = fmt(state.autoPower);
+  const foundCount = Object.keys(state.inventory).length;
+  document.getElementById('stat-found').textContent = foundCount;
+  document.getElementById('stat-total-types').textContent = PIXEL_TYPES.length;
+  document.getElementById('dex-progress-text').textContent = foundCount + ' / ' + PIXEL_TYPES.length;
+  document.getElementById('stat-session-clicks').textContent = fmt(sessionClicks);
+  document.getElementById('stat-total-clicks').textContent = fmt(state.totalClicks);
+  document.getElementById('stat-session-time').textContent = formatChrono(sessionSeconds);
+  document.getElementById('stat-total-time').textContent = formatDuration(state.totalPlaytimeSeconds);
+  document.getElementById('stat-lifetime-pixels').textContent = fmt(Math.floor(state.totalPixelsEarned));
+  const upgradesPurchased = Object.values(state.upgradeLevels).reduce((a, b) => a + b, 0);
+  document.getElementById('stat-upgrades-bought').textContent = upgradesPurchased;
+  document.getElementById('stat-best-streak').textContent = state.bestLoginStreak + ' / 31';
+  document.getElementById('stat-first-play').textContent = state.firstPlayDate
+    ? new Date(state.firstPlayDate + 'T00:00:00').toLocaleDateString('fr-FR')
+    : '—';
+}
+
+function renderUpgrades(){
+  const list = document.getElementById('upgrade-list');
+  list.innerHTML = '';
+  for(const u of UPGRADES){
+    const lvl = state.upgradeLevels[u.id] || 0;
+    const maxed = u.maxLevel && lvl >= u.maxLevel;
+    const cost = upgradeCost(u);
+    const canBuy = !maxed && state.pixels >= cost;
+
+    const div = document.createElement('div');
+    div.className = 'upgrade ' + (maxed ? 'locked' : (canBuy ? 'buyable' : ''));
+    div.innerHTML = `
+      <div class="info">
+        <div class="name">${u.name}</div>
+        <div class="desc">${u.desc}</div>
+        <div class="level">Niveau ${lvl}${u.maxLevel ? ' / ' + u.maxLevel : ''}</div>
+      </div>
+      <button class="buy" ${maxed || !canBuy ? 'disabled' : ''} data-id="${u.id}">
+        ${maxed ? 'MAX' : fmt(cost) + ' px'}
+      </button>
+    `;
+    list.appendChild(div);
+  }
+  list.querySelectorAll('button.buy').forEach(btn=>{
+    btn.addEventListener('click', ()=> buyUpgrade(btn.dataset.id));
+  });
+}
+
+function iconHtml(p, locked){
+  if(locked){
+    return `<div class="pixel-icon locked-icon"></div>`;
+  }
+  const style = `--c1:${p.c1 || '#888'};--c2:${p.c2 || p.c1 || '#888'};`;
+  return `<div class="pixel-icon ${p.shape}" style="${style}"></div>`;
+}
+
+function renderDex(){
+  const container = document.getElementById('dex-container');
+  container.innerHTML = '';
+  container.className = 'dex-columns';
+  for(const tier of TIER_ORDER){
+    const items = PIXEL_TYPES.filter(p=>p.tier===tier);
+    const foundInTier = items.filter(p=> (state.inventory[p.id]||0) > 0).length;
+
+    const column = document.createElement('div');
+    column.className = 'dex-column tier-' + tier;
+    column.innerHTML = `
+      <div class="dex-column-header">${TIER_LABELS[tier]}<span class="count">${foundInTier} / ${items.length}</span></div>
+      <div class="dex-column-body"></div>
+    `;
+    const body = column.querySelector('.dex-column-body');
+
+    for(const p of items){
+      const owned = state.inventory[p.id] || 0;
+      const found = owned > 0;
+      const chanceStr = formatChance(p.weight);
+      const item = document.createElement('div');
+      item.className = `dex-item ${found ? 'found' : 'locked'} tier-${tier}`;
+      item.innerHTML = `
+        ${iconHtml(p, !found)}
+        <div class="item-text">
+          <div class="pname">${found ? p.name : '???'}</div>
+          <div class="pchance">${chanceStr} / clic</div>
+          <div class="pcount">${found ? 'x' + owned : 'Non trouvé'}</div>
+        </div>
+      `;
+      body.appendChild(item);
+    }
+    container.appendChild(column);
+  }
+}
+
+/* ================= AUDIO ================= */
+// Tout est généré via Web Audio API (aucun fichier externe nécessaire).
+
+let audioCtx = null;
+let musicGain = null;
+let sfxGain = null;
+let musicPlaying = false;
+let musicStepTimer = null;
+let musicStep = 0;
+
+const audioPrefs = {
+  musicMuted: false,
+  sfxMuted: false,
+  musicVolume: 0.25,
+  sfxVolume: 0.45,
+};
+
+/* ================= VIBRATION ================= */
+const vibrationSupported = typeof navigator !== 'undefined' && !!navigator.vibrate;
+let vibrationEnabled = true;
+
+function vibrateClick(){
+  if(!vibrationEnabled || !vibrationSupported) return;
+  navigator.vibrate(12); // léger, façon petit tap
+}
+
+function ensureAudio(){
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  musicGain = audioCtx.createGain();
+  musicGain.gain.value = audioPrefs.musicMuted ? 0 : audioPrefs.musicVolume;
+  musicGain.connect(audioCtx.destination);
+  sfxGain = audioCtx.createGain();
+  sfxGain.gain.value = audioPrefs.sfxMuted ? 0 : audioPrefs.sfxVolume;
+  sfxGain.connect(audioCtx.destination);
+}
+
+function playTone(freq, {duration=0.12, type='sine', gainNode=null, startGain=0.5, attack=0.005, decay=null} = {}){
+  if(!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const env = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  const now = audioCtx.currentTime;
+  const d = decay != null ? decay : duration;
+  env.gain.setValueAtTime(0, now);
+  env.gain.linearRampToValueAtTime(startGain, now + attack);
+  env.gain.exponentialRampToValueAtTime(0.001, now + attack + d);
+  osc.connect(env);
+  env.connect(gainNode || sfxGain);
+  osc.start(now);
+  osc.stop(now + attack + d + 0.05);
+}
+
+// --- Clic sur la zone de tape : petit "blip" numérique ---
+function playClickSound(){
+  if(!audioCtx || audioPrefs.sfxMuted) return;
+  playTone(720 + Math.random()*60, { duration:0.06, type:'square', startGain:0.18 });
+}
+
+// --- Découverte d'un pixel : carillon de gain, plus riche selon la rareté ---
+const DISCOVERY_CHORDS = {
+  common:    [660],
+  uncommon:  [660, 880],
+  rare:      [660, 880, 990],
+  epic:      [523, 659, 784, 1046],
+  legendary: [523, 659, 784, 1046, 1318],
+  mythic:    [440, 554, 659, 880, 1108, 1318],
+  cosmic:    [392, 494, 587, 784, 988, 1175, 1568],
+};
+function playDiscoverySound(tier){
+  if(!audioCtx || audioPrefs.sfxMuted) return;
+  const notes = DISCOVERY_CHORDS[tier] || DISCOVERY_CHORDS.common;
+  notes.forEach((freq, i)=>{
+    setTimeout(()=> playTone(freq, { duration:0.35, type:'triangle', startGain:0.28 }), i * 45);
+  });
+}
+
+function playUiSound(){
+  if(!audioCtx || audioPrefs.sfxMuted) return;
+  playTone(500, { duration:0.08, type:'sine', startGain:0.2 });
+}
+
+// --- Boucle musicale synthwave / casino, 32 pas (8 notes/accord), ~8s en boucle ---
+const MUSIC_STEP_MS = 250;
+const STEPS_PER_CHORD = 8;
+const MUSIC_CHORDS = [
+  { bass:110.00, arp:[220.00,261.63,329.63,440.00,329.63,261.63,220.00,261.63] }, // Am
+  { bass:87.31,  arp:[174.61,220.00,261.63,349.23,261.63,220.00,174.61,220.00] }, // F
+  { bass:130.81, arp:[261.63,329.63,392.00,523.25,392.00,329.63,261.63,329.63] }, // C
+  { bass:98.00,  arp:[196.00,246.94,293.66,392.00,293.66,246.94,196.00,246.94] }, // G
+];
+function musicStepTick(){
+  if(!audioCtx || audioPrefs.musicMuted) { musicStep++; return; }
+  const chordIdx = Math.floor(musicStep / STEPS_PER_CHORD) % MUSIC_CHORDS.length;
+  const stepInChord = musicStep % STEPS_PER_CHORD;
+  const chord = MUSIC_CHORDS[chordIdx];
+
+  // Basse : coup principal en début d'accord, relance plus douce au milieu
+  if(stepInChord === 0 || stepInChord === 4){
+    const main = stepInChord === 0;
+    const osc = audioCtx.createOscillator();
+    const filter = audioCtx.createBiquadFilter();
+    const env = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.value = main ? chord.bass : chord.bass * 1.5; // quinte à la relance
+    filter.type = 'lowpass';
+    filter.frequency.value = 800;
+    const now = audioCtx.currentTime;
+    env.gain.setValueAtTime(0, now);
+    env.gain.linearRampToValueAtTime(main ? 0.22 : 0.13, now + 0.05);
+    env.gain.exponentialRampToValueAtTime(0.001, now + (main ? 0.95 : 0.45));
+    osc.connect(filter); filter.connect(env); env.connect(musicGain);
+    osc.start(now); osc.stop(now + (main ? 1 : 0.5));
+  }
+
+  // Arpège synthwave (8 notes par accord)
+  playTone(chord.arp[stepInChord], { duration:0.2, type:'triangle', startGain:0.13, gainNode:musicGain });
+
+  // Clochette "casino" deux fois par accord
+  if(stepInChord === 2 || stepInChord === 6){
+    playTone(1046.5, { duration:0.3, type:'sine', startGain:0.1, gainNode:musicGain });
+  }
+
+  musicStep++;
+}
+
+function startMusic(){
+  ensureAudio();
+  if(musicPlaying) return;
+  musicPlaying = true;
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  musicStepTimer = setInterval(musicStepTick, MUSIC_STEP_MS);
+}
+function stopMusic(){
+  musicPlaying = false;
+  clearInterval(musicStepTimer);
+}
+
+/* ================= OPTIONS TAB ================= */
+
+const musicToggle = document.getElementById('music-toggle');
+const sfxToggle = document.getElementById('sfx-toggle');
+const musicVolumeSlider = document.getElementById('music-volume');
+const sfxVolumeSlider = document.getElementById('sfx-volume');
+
+musicToggle.addEventListener('change', ()=>{
+  audioPrefs.musicMuted = !musicToggle.checked;
+  ensureAudio();
+  musicGain.gain.value = audioPrefs.musicMuted ? 0 : audioPrefs.musicVolume;
+  if(!audioPrefs.musicMuted) startMusic();
+});
+sfxToggle.addEventListener('change', ()=>{
+  audioPrefs.sfxMuted = !sfxToggle.checked;
+  ensureAudio();
+  sfxGain.gain.value = audioPrefs.sfxMuted ? 0 : audioPrefs.sfxVolume;
+  if(!audioPrefs.sfxMuted) playUiSound();
+});
+musicVolumeSlider.addEventListener('input', ()=>{
+  audioPrefs.musicVolume = musicVolumeSlider.value / 100;
+  ensureAudio();
+  if(!audioPrefs.musicMuted) musicGain.gain.value = audioPrefs.musicVolume;
+});
+sfxVolumeSlider.addEventListener('input', ()=>{
+  audioPrefs.sfxVolume = sfxVolumeSlider.value / 100;
+  ensureAudio();
+  if(!audioPrefs.sfxMuted) sfxGain.gain.value = audioPrefs.sfxVolume;
+});
+
+const vibrationToggle = document.getElementById('vibration-toggle');
+if(!vibrationSupported){
+  vibrationToggle.checked = false;
+  vibrationToggle.disabled = true;
+  vibrationToggle.closest('.option-row').querySelector('.option-name').textContent = 'Vibration (indisponible)';
+}
+vibrationToggle.addEventListener('change', ()=>{
+  vibrationEnabled = vibrationToggle.checked;
+  if(vibrationEnabled) vibrateClick();
+});
+
+// Le premier geste de l'utilisateur (obligatoire pour l'audio navigateur)
+// démarre le contexte audio et lance la musique si elle n'est pas coupée.
+function primeAudioOnce(){
+  ensureAudio();
+  if(!audioPrefs.musicMuted) startMusic();
+  document.removeEventListener('pointerdown', primeAudioOnce);
+}
+document.addEventListener('pointerdown', primeAudioOnce);
+
+/* ================= ACTIONS ================= */
+
+function buyUpgrade(id){
+  const u = UPGRADES.find(x=>x.id===id);
+  const lvl = state.upgradeLevels[id] || 0;
+  if(u.maxLevel && lvl >= u.maxLevel) return;
+  const cost = upgradeCost(u);
+  if(state.pixels < cost) return;
+  state.pixels -= cost;
+  state.upgradeLevels[id] = lvl + 1;
+  playUiSound();
+
+  if(u.effect === 'click') state.clickPower += u.value;
+  else if(u.effect === 'auto') state.autoPower += u.value;
+  else if(u.effect === 'luck') state.luckMult *= (1 + u.value);
+
+  updateStats();
+  renderUpgrades();
+  renderDex();
+}
+
+const TIER_TOAST_COLORS = {
+  common:    { color:'#bcbcbc', glow:'rgba(188,188,188,0.35)' },
+  uncommon:  { color:'#4ce07f', glow:'rgba(76,224,127,0.4)' },
+  rare:      { color:'#4ea1ff', glow:'rgba(78,161,255,0.4)' },
+  epic:      { color:'#c47bff', glow:'rgba(196,123,255,0.45)' },
+  legendary: { color:'#ffd24e', glow:'rgba(255,210,78,0.5)' },
+  mythic:    { color:'#ff5eae', glow:'rgba(255,94,174,0.55)' },
+  cosmic:    { color:'#00e5ff', glow:'rgba(0,229,255,0.6)' },
+};
+
+function showToast(p){
+  playDiscoverySound(p.tier);
+  const wrap = document.getElementById('toast-wrap');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  const tc = TIER_TOAST_COLORS[p.tier] || TIER_TOAST_COLORS.common;
+  toast.style.setProperty('--tier-color', tc.color);
+  toast.style.setProperty('--tier-glow', tc.glow);
+  toast.innerHTML = `${iconHtml(p,false)}<div><b>Nouveau pixel !</b><br>${p.name} (${TIER_LABELS[p.tier]})</div>`;
+  wrap.appendChild(toast);
+  setTimeout(()=> toast.remove(), 4000);
+}
+
+function rollFind(){
+  // Chaque pixel a sa propre chance indépendante (en %) sur un tirage de 0 à 100.
+  // La chance des pixels non-communs est boostée par les améliorations de chance.
+  // Si le tirage dépasse la somme cumulée des chances, aucun pixel n'est trouvé ce clic.
+  const r = Math.random() * 100;
+  let cum = 0;
+  for(const p of PIXEL_TYPES){
+    let w = p.weight;
+    if(p.tier !== 'common') w *= state.luckMult;
+    cum += w;
+    if(r < cum){
+      const isNew = !(p.id in state.inventory);
+      state.inventory[p.id] = (state.inventory[p.id] || 0) + 1;
+      if(isNew) showToast(p);
+      return;
+    }
+  }
+}
+
+function spawnFloatText(x, y, text){
+  const el = document.createElement('div');
+  el.className = 'float-text';
+  el.textContent = text;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  document.getElementById('click-zone').appendChild(el);
+  setTimeout(()=> el.remove(), 900);
+}
+
+// Petites particules de pixels qui jaillissent du point de clic
+const PARTICLE_COLORS = ['#00e5ff','#ff4ecd','#f1c40f','#2ecc71','#9b59b6','#e74c3c','#1abc9c','#ffffff'];
+function spawnParticles(x, y){
+  const zone = document.getElementById('click-zone');
+  const count = 8 + Math.floor(Math.random() * 4); // 8 à 11 particules
+  for(let i = 0; i < count; i++){
+    const p = document.createElement('div');
+    p.className = 'click-particle';
+    // Répartition en éventail tout autour, avec une distance qui dépasse
+    // largement le logo pour que les particules restent bien visibles.
+    const angle = (Math.PI * 2 * i) / count + (Math.random() * 0.6 - 0.3);
+    const dist = 70 + Math.random() * 90;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist - 14; // léger biais vers le haut
+    const size = 7 + Math.random() * 7;
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.background = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)];
+    p.style.setProperty('--dx', dx + 'px');
+    p.style.setProperty('--dy', dy + 'px');
+    p.style.setProperty('--rot', (Math.random() * 360 - 180) + 'deg');
+    zone.appendChild(p);
+    setTimeout(()=> p.remove(), 650);
+  }
+}
+
+/* ================= ANTI AUTO-CLICK ================= */
+// Limite relevée à 30 clics/seconde minimum : largement au-dessus du rythme
+// humain soutenu (~5-7 clics/s), pour ne jamais gêner un joueur rapide,
+// tout en coupant les scripts/macros d'auto-click qui tournent en continu.
+const MAX_CLICKS_PER_SEC = 30;
+const CLICK_WINDOW_MS = 1000;
+let clickTimestamps = [];
+
+function isRateLimited(now){
+  clickTimestamps = clickTimestamps.filter(t => now - t < CLICK_WINDOW_MS);
+  if(clickTimestamps.length >= MAX_CLICKS_PER_SEC) return true;
+  clickTimestamps.push(now);
+  return false;
+}
+
+function flashRateLimit(){
+  const zone = document.getElementById('click-zone');
+  zone.classList.remove('rate-limited');
+  void zone.offsetWidth; // force le redémarrage de l'animation si déjà active
+  zone.classList.add('rate-limited');
+  setTimeout(()=> zone.classList.remove('rate-limited'), 200);
+}
+
+let currentTab = 'game';
+
+function onClick(e){
+  const now = Date.now();
+  if(isRateLimited(now)){
+    flashRateLimit();
+    return;
+  }
+  state.pixels += state.clickPower;
+  state.totalPixelsEarned += state.clickPower;
+  state.totalClicks++;
+  sessionClicks++;
+  playClickSound();
+  vibrateClick();
+  rollFind();
+  const rect = e.currentTarget.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  spawnFloatText(x, y, '+' + fmt(state.clickPower));
+  spawnParticles(x, y);
+  updateStats();
+  renderUpgrades();
+  if(currentTab === 'dex') renderDex();
+}
+
+/* ================= SAVE / LOAD ================= */
+
+const SAVE_KEY = 'pixel-clicker-save-v1';
+let autosaveInterval = null;
+
+function serializeState(){
+  return JSON.stringify({
+    pixels: state.pixels,
+    clickPower: state.clickPower,
+    autoPower: state.autoPower,
+    luckMult: state.luckMult,
+    upgradeLevels: state.upgradeLevels,
+    inventory: state.inventory,
+    lastLoginDate: state.lastLoginDate,
+    loginStreak: state.loginStreak,
+    totalClicks: state.totalClicks,
+    totalPixelsEarned: state.totalPixelsEarned,
+    totalPlaytimeSeconds: state.totalPlaytimeSeconds,
+    firstPlayDate: state.firstPlayDate,
+    bestLoginStreak: state.bestLoginStreak,
+    audioPrefs: audioPrefs,
+    vibrationEnabled: vibrationEnabled,
+    savedAt: Date.now(),
+  });
+}
+
+function applySavedData(data){
+  state.pixels = data.pixels || 0;
+  state.clickPower = data.clickPower || 1;
+  state.autoPower = data.autoPower || 0;
+  state.luckMult = data.luckMult || 1;
+  state.upgradeLevels = data.upgradeLevels || {};
+  state.inventory = data.inventory || {};
+  state.lastLoginDate = data.lastLoginDate || null;
+  state.loginStreak = data.loginStreak || 0;
+  state.totalClicks = data.totalClicks || 0;
+  state.totalPixelsEarned = data.totalPixelsEarned || 0;
+  state.totalPlaytimeSeconds = data.totalPlaytimeSeconds || 0;
+  state.firstPlayDate = data.firstPlayDate || null;
+  state.bestLoginStreak = data.bestLoginStreak || 0;
+  if(typeof data.vibrationEnabled === 'boolean' && vibrationSupported){
+    vibrationEnabled = data.vibrationEnabled;
+    vibrationToggle.checked = vibrationEnabled;
+  }
+  if(data.audioPrefs){
+    Object.assign(audioPrefs, data.audioPrefs);
+    musicToggle.checked = !audioPrefs.musicMuted;
+    sfxToggle.checked = !audioPrefs.sfxMuted;
+    musicVolumeSlider.value = Math.round(audioPrefs.musicVolume * 100);
+    sfxVolumeSlider.value = Math.round(audioPrefs.sfxVolume * 100);
+    if(audioCtx){
+      musicGain.gain.value = audioPrefs.musicMuted ? 0 : audioPrefs.musicVolume;
+      sfxGain.gain.value = audioPrefs.sfxMuted ? 0 : audioPrefs.sfxVolume;
+    }
+  }
+}
+
+function setStatus(msg){
+  document.getElementById('save-status').textContent = msg;
+}
+
+// Version autonome (Android / PWA) : sauvegarde uniquement via le
+// localStorage du téléphone, pas de dépendance à Claude.ai.
+async function saveGame(silent){
+  const json = serializeState();
+  let saved = false;
+  try{
+    localStorage.setItem(SAVE_KEY, json);
+    saved = true;
+  }catch(e){ /* stockage indisponible (mode privé, quota plein, etc.) */ }
+  if(saved){
+    const t = new Date().toLocaleTimeString('fr-FR');
+    setStatus('Dernière sauvegarde : ' + t);
+    if(!silent) flashStatus('Partie sauvegardée !');
+  }else if(!silent){
+    flashStatus("Impossible de sauvegarder ici.");
+  }
+  return saved;
+}
+
+let lastLoadedSavedAt = null;
+
+async function loadGame(silent){
+  let raw = null;
+  try{ raw = localStorage.getItem(SAVE_KEY); }catch(e){ /* ignore */ }
+  if(!raw){
+    if(!silent) flashStatus('Aucune sauvegarde trouvée.');
+    return false;
+  }
+  try{
+    const data = JSON.parse(raw);
+    applySavedData(data);
+    lastLoadedSavedAt = data.savedAt || null;
+    updateStats();
+    renderUpgrades();
+    renderDex();
+    const t = data.savedAt ? new Date(data.savedAt).toLocaleTimeString('fr-FR') : '';
+    setStatus('Partie chargée' + (t ? ' (sauvegardée à ' + t + ')' : ''));
+    return true;
+  }catch(e){
+    if(!silent) flashStatus('Sauvegarde corrompue.');
+    return false;
+  }
+}
+
+function flashStatus(msg){
+  const el = document.getElementById('save-status');
+  const prev = el.textContent;
+  el.textContent = msg;
+  setTimeout(()=>{ if(el.textContent === msg) el.textContent = prev; }, 2200);
+}
+
+document.getElementById('save-btn').addEventListener('click', ()=> saveGame(false));
+document.getElementById('load-btn').addEventListener('click', ()=>{
+  if(confirm('Charger la sauvegarde ? Ta progression actuelle non sauvegardée sera perdue.')){
+    loadGame(false);
+  }
+});
+
+/* ---- Export / Import (code de sauvegarde portable) ---- */
+// Encodage base64 sûr pour l'UTF-8 (les noms de pixels contiennent des accents).
+function toBase64Utf8(str){ return btoa(unescape(encodeURIComponent(str))); }
+function fromBase64Utf8(b64){ return decodeURIComponent(escape(atob(b64))); }
+
+document.getElementById('export-btn').addEventListener('click', ()=>{
+  const code = toBase64Utf8(serializeState());
+  document.getElementById('export-code').value = code;
+  document.getElementById('export-overlay').style.display = 'flex';
+});
+document.getElementById('export-close-btn').addEventListener('click', ()=>{
+  document.getElementById('export-overlay').style.display = 'none';
+});
+document.getElementById('export-copy-btn').addEventListener('click', async ()=>{
+  const ta = document.getElementById('export-code');
+  ta.select();
+  ta.setSelectionRange(0, ta.value.length);
+  try{
+    await navigator.clipboard.writeText(ta.value);
+  }catch(e){
+    try{ document.execCommand('copy'); }catch(e2){ /* le joueur peut copier manuellement, le texte est sélectionné */ }
+  }
+  flashStatus('Code copié !');
+});
+
+document.getElementById('import-btn').addEventListener('click', ()=>{
+  document.getElementById('import-code').value = '';
+  document.getElementById('import-overlay').style.display = 'flex';
+});
+document.getElementById('import-close-btn').addEventListener('click', ()=>{
+  document.getElementById('import-overlay').style.display = 'none';
+});
+document.getElementById('import-confirm-btn').addEventListener('click', ()=>{
+  const raw = document.getElementById('import-code').value.trim();
+  if(!raw) return;
+  try{
+    const data = JSON.parse(fromBase64Utf8(raw));
+    applySavedData(data);
+    lastLoadedSavedAt = data.savedAt || Date.now();
+    updateStats();
+    renderUpgrades();
+    renderDex();
+    renderRewardTimeline();
+    saveGame(true);
+    document.getElementById('import-overlay').style.display = 'none';
+    flashStatus('Sauvegarde importée !');
+  }catch(e){
+    alert("Ce code n'est pas valide ou est incomplet. Vérifie que tu l'as copié en entier.");
+  }
+});
+
+const autosaveToggle = document.getElementById('autosave-toggle');
+autosaveToggle.addEventListener('change', ()=>{
+  if(autosaveToggle.checked){
+    autosaveInterval = setInterval(()=> saveGame(true), 20000);
+    flashStatus('Sauvegarde auto activée (20s)');
+  }else{
+    clearInterval(autosaveInterval);
+    flashStatus('Sauvegarde auto désactivée');
+  }
+});
+
+/* ================= RÉCOMPENSES DE CONNEXION ================= */
+
+function buildDailyRewards(){
+  // Jours "collection" : offrent un pixel garanti de la rareté indiquée
+  // (pas de gain en pixels-monnaie ces jours-là, la découverte est le lot).
+  const bonusDays = { 1:'common', 5:'common', 10:'common', 15:'uncommon', 20:'uncommon', 25:'rare', 30:'rare' };
+  const rewards = [];
+  for(let day = 1; day <= 31; day++){
+    if(bonusDays[day]){
+      rewards.push({ day, pixels:0, bonusTier: bonusDays[day] });
+    }else{
+      // Jours "monnaie" : progression exponentielle (×1.3 par jour) pour
+      // rester significative même en fin de partie, au lieu d'un simple +500/jour.
+      // Croissance ×2.5/jour, plafonnée pour rester cohérente en fin de mois.
+      const DAILY_REWARD_CAP = 5000000;
+      rewards.push({ day, pixels: Math.min(DAILY_REWARD_CAP, Math.round(500 * Math.pow(2.5, day - 1))), bonusTier: null });
+    }
+  }
+  return rewards;
+}
+const DAILY_REWARDS = buildDailyRewards();
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function daysBetween(d1, d2){
+  const a = new Date(d1 + 'T00:00:00');
+  const b = new Date(d2 + 'T00:00:00');
+  return Math.round((b - a) / 86400000);
+}
+
+function grantRandomPixelOfTier(tier){
+  const pool = PIXEL_TYPES.filter(p => p.tier === tier);
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  state.inventory[pick.id] = (state.inventory[pick.id] || 0) + 1;
+  return pick;
+}
+
+function checkDailyReward(){
+  const today = todayStr();
+  if(state.lastLoginDate === today) return; // déjà récupérée aujourd'hui
+
+  let day;
+  if(state.lastLoginDate){
+    const diff = daysBetween(state.lastLoginDate, today);
+    day = diff === 1 ? (state.loginStreak % 31) + 1 : 1; // suite si hier, sinon on repart à 1
+  }else{
+    day = 1; // toute première connexion
+  }
+  showRewardModal(day, today);
+}
+
+function giftIconSvg(){
+  return `<svg class="day-icon" viewBox="0 0 7 7" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+    <rect class="ribbon" x="1" y="0" width="1" height="1"/>
+    <rect class="ribbon" x="5" y="0" width="1" height="1"/>
+    <rect class="box" x="0" y="1" width="7" height="1"/>
+    <rect class="box" x="0" y="2" width="3" height="5"/>
+    <rect class="box" x="4" y="2" width="3" height="5"/>
+    <rect class="ribbon" x="3" y="0" width="1" height="7"/>
+    <rect class="ribbon" x="0" y="4" width="7" height="1"/>
+  </svg>`;
+}
+
+function renderRewardTimeline(){
+  const container = document.getElementById('reward-timeline');
+  container.innerHTML = '';
+  document.getElementById('reward-streak-text').textContent = 'Jour ' + state.loginStreak + ' / 31';
+  for(const reward of DAILY_REWARDS){
+    const unlocked = reward.day <= state.loginStreak;
+    const isCurrent = reward.day === state.loginStreak && state.loginStreak > 0;
+    const card = document.createElement('div');
+    card.className = 'reward-day-card' + (unlocked ? ' unlocked' : ' locked') + (isCurrent ? ' current' : '') + (reward.bonusTier ? ' tier-' + reward.bonusTier : '');
+    card.innerHTML = `
+      ${giftIconSvg()}
+      <div class="day-label">Jour ${reward.day}</div>
+      ${reward.pixels > 0 ? `<div class="day-amount">+${fmt(reward.pixels)}</div>` : ''}
+      ${reward.bonusTier ? `<div class="day-bonus">★ Pixel ${TIER_LABELS[reward.bonusTier]}</div>` : ''}
+    `;
+    container.appendChild(card);
+  }
+}
+
+function showRewardModal(day, today){
+  const reward = DAILY_REWARDS.find(r => r.day === day);
+  const overlay = document.getElementById('reward-overlay');
+  const icon = document.getElementById('reward-icon');
+  icon.className = 'reward-icon' + (reward.bonusTier ? ' big' : '');
+  document.getElementById('reward-day-num').textContent = day;
+
+  let text = '';
+  if(reward.pixels > 0) text += `+<b>${fmt(reward.pixels)}</b> pixels offerts !`;
+  if(reward.bonusTier){
+    if(text) text += '<br>';
+    text += `Un pixel <b>${TIER_LABELS[reward.bonusTier]}</b> garanti !`;
+  }
+  if(day === 31) text = `🎉 Cycle de connexion complet ! 🎉<br>` + text;
+  document.getElementById('reward-text').innerHTML = text;
+
+  overlay.style.display = 'flex';
+  document.getElementById('reward-claim-btn').onclick = ()=>{
+    state.pixels += reward.pixels;
+    state.totalPixelsEarned += reward.pixels;
+    if(reward.bonusTier) grantRandomPixelOfTier(reward.bonusTier);
+    state.lastLoginDate = today;
+    state.loginStreak = day;
+    state.bestLoginStreak = Math.max(state.bestLoginStreak, day);
+    overlay.style.display = 'none';
+    updateStats();
+    renderUpgrades();
+    if(currentTab === 'dex') renderDex();
+    if(currentTab === 'rewards') renderRewardTimeline();
+    playDiscoverySound(reward.bonusTier || (day === 31 ? 'rare' : 'common'));
+    saveGame(true);
+  };
+}
+
+/* ================= PROGRESSION HORS-LIGNE ================= */
+// Comparé aux autres clickers : Cookie Clicker ne plafonne pas du tout,
+// AdVenture Capitalist plafonne à 2h de base (extensible via pub/IAP),
+// Egg Inc tourne autour de 3h. Pas de système de pub/monétisation ici,
+// donc on part sur un plafond généreux de 8h — assez pour couvrir une
+// nuit de sommeil sans être infini, ce qui garde un intérêt à revenir
+// plus souvent sans punir un joueur qui décroche une journée.
+const OFFLINE_CAP_SECONDS = 8 * 3600;
+const OFFLINE_MIN_SECONDS = 60; // pas de popup pour un simple refresh de page
+
+function formatDuration(totalSeconds){
+  const s = Math.floor(totalSeconds);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if(h > 0) return `${h} h ${m} min`;
+  if(m > 0) return `${m} min ${sec} s`;
+  return `${sec} s`;
+}
+
+// Chrono type HH:MM:SS (ou MM:SS en dessous d'une heure) pour la session en cours.
+function formatChrono(totalSeconds){
+  const s = Math.floor(totalSeconds);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const pad = n => String(n).padStart(2, '0');
+  return h > 0 ? `${pad(h)}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
+}
+
+function checkOfflineProgress(){
+  if(!lastLoadedSavedAt){ checkDailyReward(); return; }
+  const elapsedSec = (Date.now() - lastLoadedSavedAt) / 1000;
+
+  if(elapsedSec < OFFLINE_MIN_SECONDS || state.autoPower <= 0){
+    checkDailyReward();
+    return;
+  }
+
+  const cappedSec = Math.min(elapsedSec, OFFLINE_CAP_SECONDS);
+  const earned = Math.floor(state.autoPower * cappedSec);
+  if(earned <= 0){ checkDailyReward(); return; }
+
+  state.pixels += earned;
+  state.totalPixelsEarned += earned;
+
+  let text = `Tu étais absent <b>${formatDuration(elapsedSec)}</b>.<br>+<b>${fmt(earned)}</b> pixels collectés automatiquement !`;
+  if(elapsedSec > OFFLINE_CAP_SECONDS){
+    text += `<br><span style="color:var(--muted);font-size:0.7rem;">(gains plafonnés à 8h d'absence)</span>`;
+  }
+  document.getElementById('offline-text').innerHTML = text;
+
+  const overlay = document.getElementById('offline-overlay');
+  overlay.style.display = 'flex';
+  document.getElementById('offline-claim-btn').onclick = ()=>{
+    overlay.style.display = 'none';
+    updateStats();
+    renderUpgrades();
+    if(currentTab === 'dex') renderDex();
+    playDiscoverySound('uncommon');
+    saveGame(true);
+    checkDailyReward();
+  };
+}
+
+// Sauvegarde silencieuse quand l'app passe en arrière-plan ou se ferme,
+// pour que l'horodatage utilisé au retour soit fiable même sans
+// sauvegarde automatique activée. On coupe aussi la musique pour ne pas
+// qu'elle continue à jouer une fois l'app quittée, et on la reprend au retour.
+let musicWasPlayingBeforeHide = false;
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'hidden'){
+    saveGame(true);
+    musicWasPlayingBeforeHide = musicPlaying;
+    if(musicPlaying){
+      stopMusic();
+      if(audioCtx && audioCtx.state === 'running') audioCtx.suspend();
+    }
+  }else if(document.visibilityState === 'visible'){
+    if(musicWasPlayingBeforeHide && !audioPrefs.musicMuted){
+      if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      startMusic();
+    }
+  }
+});
+window.addEventListener('pagehide', ()=>{
+  saveGame(true);
+  stopMusic();
+});
+
+/* ================= TABS ================= */
+
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    currentTab = tab;
+    document.getElementById('tab-game').style.display = tab === 'game' ? 'grid' : 'none';
+    document.getElementById('tab-dex').style.display = tab === 'dex' ? 'block' : 'none';
+    document.getElementById('tab-options').style.display = tab === 'options' ? 'block' : 'none';
+    document.getElementById('tab-rewards').style.display = tab === 'rewards' ? 'block' : 'none';
+    document.getElementById('tab-cosmetics').style.display = tab === 'cosmetics' ? 'block' : 'none';
+    document.getElementById('tab-stats').style.display = tab === 'stats' ? 'block' : 'none';
+    if(tab === 'dex') renderDex();
+    if(tab === 'rewards') renderRewardTimeline();
+  });
+});
+
+/* ================= INIT ================= */
+
+document.getElementById('click-zone').addEventListener('click', onClick);
+document.getElementById('reset-btn').addEventListener('click', ()=>{
+  if(confirm('Réinitialiser toute ta progression (pixels, améliorations et pixeldex) ?')){
+    state = freshState();
+    updateStats();
+    renderUpgrades();
+    renderDex();
+  }
+});
+
+setInterval(()=>{
+  if(state.autoPower > 0){
+    state.pixels += state.autoPower / 5;
+    state.totalPixelsEarned += state.autoPower / 5;
+    updateStats();
+    renderUpgrades();
+  }
+}, 200);
+
+// Chrono de la session en cours + cumul du temps de jeu total, tick chaque
+// seconde, mis en pause quand l'app est en arrière-plan (voir visibilitychange).
+setInterval(()=>{
+  if(document.visibilityState === 'visible'){
+    sessionSeconds++;
+    state.totalPlaytimeSeconds++;
+    if(currentTab === 'stats') updateStats();
+  }
+}, 1000);
+
+updateStats();
+renderUpgrades();
+renderDex();
+loadGame(true).then(()=>{
+  renderRewardTimeline();
+  checkOfflineProgress();
+  if(!state.firstPlayDate) state.firstPlayDate = todayStr();
+});
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
