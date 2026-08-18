@@ -1,5 +1,5 @@
 // Service worker minimal : met en cache l'app pour qu'elle fonctionne hors-ligne.
-const CACHE_NAME = 'pixel-clicker-v3';
+const CACHE_NAME = 'pixel-clicker-v4';
 const APP_SHELL = [
   './',
   './index.html',
