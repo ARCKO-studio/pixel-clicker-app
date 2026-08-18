@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pixel Clicker</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f0c29">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;600;800&display=swap');
 
@@ -22,7 +18,7 @@
     --text:#eef0ff;
     --muted:#9a9ac4;
   }
-  *{box-sizing:border-box;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body{
     margin:0;
     min-height:100vh;
@@ -497,26 +493,42 @@
   }
   @keyframes cosmicGradient{ 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
 
+  /* Pixel Cookie — clin d'œil à Cookie Clicker, façon biscuit pixelisé */
+  .cookie-icon{
+    border-radius:50%;
+    background-image:
+      radial-gradient(circle at 25% 28%, #5c3a21 7%, transparent 8%),
+      radial-gradient(circle at 63% 20%, #5c3a21 6%, transparent 7%),
+      radial-gradient(circle at 80% 52%, #5c3a21 8%, transparent 9%),
+      radial-gradient(circle at 38% 62%, #5c3a21 6%, transparent 7%),
+      radial-gradient(circle at 58% 80%, #5c3a21 7%, transparent 8%),
+      radial-gradient(circle at 16% 58%, #5c3a21 5%, transparent 6%),
+      radial-gradient(circle at 45% 45%, #e8c39e, #c68642 55%, #a3672f 100%);
+    box-shadow:0 0 20px 6px rgba(0,229,255,0.5), 0 0 26px 8px rgba(255,78,205,0.35);
+    animation:pulseGlow 1.4s ease-in-out infinite alternate, cosmicSpin3d 3.2s ease-in-out infinite;
+  }
+
   /* toast */
   #toast-wrap{
     position:fixed;
-    top:16px;
+    bottom:16px;
     right:16px;
     display:flex;
-    flex-direction:column;
+    flex-direction:column-reverse;
     gap:8px;
     z-index:999;
+    max-width:calc(100vw - 32px);
   }
   .toast{
     background:linear-gradient(120deg,#1a1a2e,#302b63);
-    border:2px solid var(--accent2);
+    border:2px solid var(--tier-color, var(--accent2));
     border-radius:12px;
     padding:10px 16px;
     font-size:0.82rem;
     display:flex;
     align-items:center;
     gap:10px;
-    box-shadow:0 0 18px rgba(255,78,205,0.35);
+    box-shadow:0 0 18px var(--tier-glow, rgba(255,78,205,0.35));
     animation:toastIn 0.3s ease, toastOut 0.4s ease 3.4s forwards;
     max-width:260px;
   }
@@ -542,6 +554,28 @@
     margin:4px 0 16px;
     color:var(--accent2);
   }
+  .stats-panel{ max-width:520px; }
+  .stats-row{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:12px;
+    margin-bottom:6px;
+  }
+  .stat-block{
+    background:#22224466;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 8px;
+    text-align:center;
+  }
+  .stat-value{
+    font-family:'Press Start 2P', monospace;
+    font-size:0.95rem;
+    color:var(--accent);
+    margin-bottom:6px;
+    word-break:break-word;
+  }
+  .stat-label{ font-size:0.66rem; color:var(--muted); line-height:1.3; }
   .option-row{
     display:flex;
     justify-content:space-between;
@@ -628,6 +662,56 @@
     margin:0 0 10px;
   }
   .coming-soon-sub{ font-size:0.75rem !important; }
+
+  .cosmetic-preview-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
+    gap:14px;
+    max-width:620px;
+    margin:16px auto 0;
+  }
+  .cosmetic-card{
+    background:var(--panel);
+    border:2px solid var(--border);
+    border-radius:16px;
+    padding:18px 14px;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    opacity:0.85;
+  }
+  .cosmetic-icon{
+    width:52px; height:52px;
+    border-radius:12px;
+    margin-bottom:4px;
+  }
+  .cosmetic-name{ font-weight:700; font-size:0.9rem; }
+  .cosmetic-badge{
+    font-family:'Press Start 2P', monospace;
+    font-size:0.5rem;
+    letter-spacing:1px;
+    color:#0f0c29;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    padding:4px 10px;
+    border-radius:14px;
+  }
+  .cosmetic-price{ font-size:0.72rem; color:var(--muted); line-height:1.4; }
+  .cosmetic-price b{ color:var(--accent); }
+  .cosmetic-buy-btn{
+    margin-top:6px;
+    font-family:'Rubik', sans-serif;
+    font-weight:700;
+    font-size:0.72rem;
+    padding:9px 14px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:none;
+    color:var(--muted);
+    cursor:not-allowed;
+    width:100%;
+  }
 
   /* ---------- DAILY REWARD MODAL ---------- */
   .reward-overlay{
@@ -821,6 +905,14 @@
     </svg>
     Cosmétiques
   </button>
+  <button data-tab="stats">
+    <svg class="icon-mark" viewBox="0 0 5 5" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="2" width="1" height="3" fill="#00e5ff"/>
+      <rect x="2" y="1" width="1" height="4" fill="#ff4ecd"/>
+      <rect x="4" y="0" width="1" height="5" fill="#f1c40f"/>
+    </svg>
+    Statistiques
+  </button>
 </nav>
 
 <main>
@@ -949,6 +1041,70 @@
       <h2>Cosmétiques</h2>
       <p>Personnalise l'apparence de ta zone de clic, débloque des thèmes de couleurs et des effets exclusifs grâce à tes pixels.</p>
       <p class="coming-soon-sub">Cette section est en préparation — reviens plus tard pour la découvrir !</p>
+    </div>
+
+    <div class="cosmetic-preview-grid">
+      <div class="cosmetic-card">
+        <div class="cosmetic-icon epic-plasma" style="--c1:#00e5ff;--c2:#ff4ecd;"></div>
+        <div class="cosmetic-name">Thème Prisme</div>
+        <div class="cosmetic-badge">À VENIR</div>
+        <div class="cosmetic-price">Coût prévu : <b>50×</b> Pixel Commun aléatoire</div>
+        <button class="cosmetic-buy-btn" disabled>Bientôt disponible</button>
+      </div>
+      <div class="cosmetic-card">
+        <div class="cosmetic-icon legendary-icon shape-hex"></div>
+        <div class="cosmetic-name">Halo Éclat</div>
+        <div class="cosmetic-badge">À VENIR</div>
+        <div class="cosmetic-price">Coût prévu : <b>25×</b> Pixel Peu Commun aléatoire</div>
+        <button class="cosmetic-buy-btn" disabled>Bientôt disponible</button>
+      </div>
+      <div class="cosmetic-card">
+        <div class="cosmetic-icon mythic-icon shape-octagon"></div>
+        <div class="cosmetic-name">Traînée Nova</div>
+        <div class="cosmetic-badge">À VENIR</div>
+        <div class="cosmetic-price">Coût prévu : <b>1×</b> Pixel Épique</div>
+        <button class="cosmetic-buy-btn" disabled>Bientôt disponible</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-stats" style="display:none;">
+    <div class="options-panel stats-panel">
+      <h2>STATISTIQUES</h2>
+      <div class="stats-row">
+        <div class="stat-block">
+          <div class="stat-value" id="stat-session-clicks">0</div>
+          <div class="stat-label">Clics cette session</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-total-clicks">0</div>
+          <div class="stat-label">Clics au total</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-session-time">00:00</div>
+          <div class="stat-label">Temps de jeu (session)</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-total-time">0 s</div>
+          <div class="stat-label">Temps de jeu total</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-lifetime-pixels">0</div>
+          <div class="stat-label">Pixels gagnés au total</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-upgrades-bought">0</div>
+          <div class="stat-label">Améliorations achetées</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-best-streak">0 / 31</div>
+          <div class="stat-label">Meilleure série de connexion</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-value" id="stat-first-play">—</div>
+          <div class="stat-label">Joueur depuis</div>
+        </div>
+      </div>
     </div>
   </section>
 </main>
@@ -1108,20 +1264,21 @@ const PIXEL_TYPES = [
   { id:'e7', name:'Pixel Miroir',    tier:'epic', weight:0.006, shape:'epic-mirror',  c1:'#b0c4de', c2:'#b0c4de' },
 
   // LEGENDARY — special shapes, très faible taux de drop (0.0005% / clic chacun)
-  { id:'l1', name:'Pixel Hexagonal',      tier:'legendary', weight:0.0005, shape:'shape-hex legendary-icon' },
-  { id:'l2', name:'Pixel Triangulaire',   tier:'legendary', weight:0.0005, shape:'shape-triangle legendary-icon' },
-  { id:'l3', name:'Pixel Étoilé',         tier:'legendary', weight:0.0005, shape:'shape-star legendary-icon' },
-  { id:'l4', name:'Pixel Pentagonal',     tier:'legendary', weight:0.0005, shape:'shape-pentagon legendary-icon-ruby' },
-  { id:'l5', name:'Pixel Croix Sacrée',   tier:'legendary', weight:0.0005, shape:'shape-cross legendary-icon-emerald' },
-  { id:'l6', name:'Pixel Losange Royal',  tier:'legendary', weight:0.0005, shape:'shape-diamond legendary-icon' },
+  { id:'l1', name:'Pixel Hexagonal',      tier:'legendary', weight:0.0002, shape:'shape-hex legendary-icon' },
+  { id:'l2', name:'Pixel Triangulaire',   tier:'legendary', weight:0.0002, shape:'shape-triangle legendary-icon' },
+  { id:'l3', name:'Pixel Étoilé',         tier:'legendary', weight:0.0002, shape:'shape-star legendary-icon' },
+  { id:'l4', name:'Pixel Pentagonal',     tier:'legendary', weight:0.0002, shape:'shape-pentagon legendary-icon-ruby' },
+  { id:'l5', name:'Pixel Croix Sacrée',   tier:'legendary', weight:0.0002, shape:'shape-cross legendary-icon-emerald' },
+  { id:'l6', name:'Pixel Losange Royal',  tier:'legendary', weight:0.0002, shape:'shape-diamond legendary-icon' },
 
   // MYTHIC — extrêmement rare (0.0001% / clic chacun)
-  { id:'m1', name:'Pixel Quantique', tier:'mythic', weight:0.0001, shape:'shape-octagon mythic-icon' },
-  { id:'m2', name:'Pixel Éclipse',   tier:'mythic', weight:0.0001, shape:'shape-circle mythic-eclipse' },
-  { id:'m3', name:'Pixel Phénix',    tier:'mythic', weight:0.0001, shape:'shape-triangle mythic-phoenix' },
+  { id:'m1', name:'Pixel Quantique', tier:'mythic', weight:0.00005, shape:'shape-octagon mythic-icon' },
+  { id:'m2', name:'Pixel Éclipse',   tier:'mythic', weight:0.00005, shape:'shape-circle mythic-eclipse' },
+  { id:'m3', name:'Pixel Phénix',    tier:'mythic', weight:0.00005, shape:'shape-triangle mythic-phoenix' },
 
   // COSMIQUE — la rareté ultime, effet 3D (0.00001% / clic)
   { id:'x1', name:'Pixel Dimensionnel', tier:'cosmic', weight:0.00001, shape:'shape-round cosmic-icon', c1:'#00e5ff', c2:'#ff4ecd' },
+  { id:'x2', name:'Pixel Cookie', tier:'cosmic', weight:0.00001, shape:'cookie-icon' },
 ];
 
 const TIER_LABELS = {
@@ -1154,9 +1311,16 @@ function freshState(){
     inventory:{},
     lastLoginDate:null,
     loginStreak:0,
+    totalClicks:0,
+    totalPixelsEarned:0,
+    totalPlaytimeSeconds:0,
+    firstPlayDate:null,
+    bestLoginStreak:0,
   };
 }
 let state = freshState();
+let sessionClicks = 0;      // ne se persiste pas, repart de 0 à chaque ouverture
+let sessionSeconds = 0;     // idem, chrono de la session en cours
 
 /* ================= HELPERS ================= */
 
@@ -1193,6 +1357,17 @@ function updateStats(){
   document.getElementById('stat-found').textContent = foundCount;
   document.getElementById('stat-total-types').textContent = PIXEL_TYPES.length;
   document.getElementById('dex-progress-text').textContent = foundCount + ' / ' + PIXEL_TYPES.length;
+  document.getElementById('stat-session-clicks').textContent = fmt(sessionClicks);
+  document.getElementById('stat-total-clicks').textContent = fmt(state.totalClicks);
+  document.getElementById('stat-session-time').textContent = formatChrono(sessionSeconds);
+  document.getElementById('stat-total-time').textContent = formatDuration(state.totalPlaytimeSeconds);
+  document.getElementById('stat-lifetime-pixels').textContent = fmt(Math.floor(state.totalPixelsEarned));
+  const upgradesPurchased = Object.values(state.upgradeLevels).reduce((a, b) => a + b, 0);
+  document.getElementById('stat-upgrades-bought').textContent = upgradesPurchased;
+  document.getElementById('stat-best-streak').textContent = state.bestLoginStreak + ' / 31';
+  document.getElementById('stat-first-play').textContent = state.firstPlayDate
+    ? new Date(state.firstPlayDate + 'T00:00:00').toLocaleDateString('fr-FR')
+    : '—';
 }
 
 function renderUpgrades(){
@@ -1477,11 +1652,24 @@ function buyUpgrade(id){
   renderDex();
 }
 
+const TIER_TOAST_COLORS = {
+  common:    { color:'#bcbcbc', glow:'rgba(188,188,188,0.35)' },
+  uncommon:  { color:'#4ce07f', glow:'rgba(76,224,127,0.4)' },
+  rare:      { color:'#4ea1ff', glow:'rgba(78,161,255,0.4)' },
+  epic:      { color:'#c47bff', glow:'rgba(196,123,255,0.45)' },
+  legendary: { color:'#ffd24e', glow:'rgba(255,210,78,0.5)' },
+  mythic:    { color:'#ff5eae', glow:'rgba(255,94,174,0.55)' },
+  cosmic:    { color:'#00e5ff', glow:'rgba(0,229,255,0.6)' },
+};
+
 function showToast(p){
   playDiscoverySound(p.tier);
   const wrap = document.getElementById('toast-wrap');
   const toast = document.createElement('div');
   toast.className = 'toast';
+  const tc = TIER_TOAST_COLORS[p.tier] || TIER_TOAST_COLORS.common;
+  toast.style.setProperty('--tier-color', tc.color);
+  toast.style.setProperty('--tier-glow', tc.glow);
   toast.innerHTML = `${iconHtml(p,false)}<div><b>Nouveau pixel !</b><br>${p.name} (${TIER_LABELS[p.tier]})</div>`;
   wrap.appendChild(toast);
   setTimeout(()=> toast.remove(), 4000);
@@ -1576,6 +1764,9 @@ function onClick(e){
     return;
   }
   state.pixels += state.clickPower;
+  state.totalPixelsEarned += state.clickPower;
+  state.totalClicks++;
+  sessionClicks++;
   playClickSound();
   vibrateClick();
   rollFind();
@@ -1604,6 +1795,11 @@ function serializeState(){
     inventory: state.inventory,
     lastLoginDate: state.lastLoginDate,
     loginStreak: state.loginStreak,
+    totalClicks: state.totalClicks,
+    totalPixelsEarned: state.totalPixelsEarned,
+    totalPlaytimeSeconds: state.totalPlaytimeSeconds,
+    firstPlayDate: state.firstPlayDate,
+    bestLoginStreak: state.bestLoginStreak,
     audioPrefs: audioPrefs,
     vibrationEnabled: vibrationEnabled,
     savedAt: Date.now(),
@@ -1619,6 +1815,11 @@ function applySavedData(data){
   state.inventory = data.inventory || {};
   state.lastLoginDate = data.lastLoginDate || null;
   state.loginStreak = data.loginStreak || 0;
+  state.totalClicks = data.totalClicks || 0;
+  state.totalPixelsEarned = data.totalPixelsEarned || 0;
+  state.totalPlaytimeSeconds = data.totalPlaytimeSeconds || 0;
+  state.firstPlayDate = data.firstPlayDate || null;
+  state.bestLoginStreak = data.bestLoginStreak || 0;
   if(typeof data.vibrationEnabled === 'boolean' && vibrationSupported){
     vibrationEnabled = data.vibrationEnabled;
     vibrationToggle.checked = vibrationEnabled;
@@ -1640,15 +1841,24 @@ function setStatus(msg){
   document.getElementById('save-status').textContent = msg;
 }
 
-// Version autonome (Android / PWA) : sauvegarde uniquement via le
-// localStorage du téléphone, pas de dépendance à Claude.ai.
+// Tries the Claude artifact persistent storage first (works when this page
+// is viewed inside Claude.ai). Falls back to the browser's own localStorage
+// so saving still works when the file is downloaded and opened directly.
 async function saveGame(silent){
   const json = serializeState();
   let saved = false;
   try{
-    localStorage.setItem(SAVE_KEY, json);
-    saved = true;
-  }catch(e){ /* stockage indisponible (mode privé, quota plein, etc.) */ }
+    if(window.storage && window.storage.set){
+      await window.storage.set(SAVE_KEY, json, false);
+      saved = true;
+    }
+  }catch(e){ /* fall through to localStorage */ }
+  if(!saved){
+    try{
+      localStorage.setItem(SAVE_KEY, json);
+      saved = true;
+    }catch(e){ /* storage unavailable (private mode, etc.) */ }
+  }
   if(saved){
     const t = new Date().toLocaleTimeString('fr-FR');
     setStatus('Dernière sauvegarde : ' + t);
@@ -1663,7 +1873,15 @@ let lastLoadedSavedAt = null;
 
 async function loadGame(silent){
   let raw = null;
-  try{ raw = localStorage.getItem(SAVE_KEY); }catch(e){ /* ignore */ }
+  try{
+    if(window.storage && window.storage.get){
+      const res = await window.storage.get(SAVE_KEY, false);
+      if(res && res.value) raw = res.value;
+    }
+  }catch(e){ /* fall through to localStorage */ }
+  if(!raw){
+    try{ raw = localStorage.getItem(SAVE_KEY); }catch(e){ /* ignore */ }
+  }
   if(!raw){
     if(!silent) flashStatus('Aucune sauvegarde trouvée.');
     return false;
@@ -1771,8 +1989,11 @@ function buildDailyRewards(){
     if(bonusDays[day]){
       rewards.push({ day, pixels:0, bonusTier: bonusDays[day] });
     }else{
-      // Jours "monnaie" : progression linéaire, 500 pixels puis +500 par jour.
-      rewards.push({ day, pixels: 500 * day, bonusTier: null });
+      // Jours "monnaie" : progression exponentielle (×1.3 par jour) pour
+      // rester significative même en fin de partie, au lieu d'un simple +500/jour.
+      // Croissance ×2.5/jour, plafonnée pour rester cohérente en fin de mois.
+      const DAILY_REWARD_CAP = 5000000;
+      rewards.push({ day, pixels: Math.min(DAILY_REWARD_CAP, Math.round(500 * Math.pow(2.5, day - 1))), bonusTier: null });
     }
   }
   return rewards;
@@ -1860,9 +2081,11 @@ function showRewardModal(day, today){
   overlay.style.display = 'flex';
   document.getElementById('reward-claim-btn').onclick = ()=>{
     state.pixels += reward.pixels;
+    state.totalPixelsEarned += reward.pixels;
     if(reward.bonusTier) grantRandomPixelOfTier(reward.bonusTier);
     state.lastLoginDate = today;
     state.loginStreak = day;
+    state.bestLoginStreak = Math.max(state.bestLoginStreak, day);
     overlay.style.display = 'none';
     updateStats();
     renderUpgrades();
@@ -1893,6 +2116,16 @@ function formatDuration(totalSeconds){
   return `${sec} s`;
 }
 
+// Chrono type HH:MM:SS (ou MM:SS en dessous d'une heure) pour la session en cours.
+function formatChrono(totalSeconds){
+  const s = Math.floor(totalSeconds);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const pad = n => String(n).padStart(2, '0');
+  return h > 0 ? `${pad(h)}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
+}
+
 function checkOfflineProgress(){
   if(!lastLoadedSavedAt){ checkDailyReward(); return; }
   const elapsedSec = (Date.now() - lastLoadedSavedAt) / 1000;
@@ -1907,6 +2140,7 @@ function checkOfflineProgress(){
   if(earned <= 0){ checkDailyReward(); return; }
 
   state.pixels += earned;
+  state.totalPixelsEarned += earned;
 
   let text = `Tu étais absent <b>${formatDuration(elapsedSec)}</b>.<br>+<b>${fmt(earned)}</b> pixels collectés automatiquement !`;
   if(elapsedSec > OFFLINE_CAP_SECONDS){
@@ -1929,11 +2163,28 @@ function checkOfflineProgress(){
 
 // Sauvegarde silencieuse quand l'app passe en arrière-plan ou se ferme,
 // pour que l'horodatage utilisé au retour soit fiable même sans
-// sauvegarde automatique activée.
+// sauvegarde automatique activée. On coupe aussi la musique pour ne pas
+// qu'elle continue à jouer une fois l'app quittée, et on la reprend au retour.
+let musicWasPlayingBeforeHide = false;
 document.addEventListener('visibilitychange', ()=>{
-  if(document.visibilityState === 'hidden') saveGame(true);
+  if(document.visibilityState === 'hidden'){
+    saveGame(true);
+    musicWasPlayingBeforeHide = musicPlaying;
+    if(musicPlaying){
+      stopMusic();
+      if(audioCtx && audioCtx.state === 'running') audioCtx.suspend();
+    }
+  }else if(document.visibilityState === 'visible'){
+    if(musicWasPlayingBeforeHide && !audioPrefs.musicMuted){
+      if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      startMusic();
+    }
+  }
 });
-window.addEventListener('pagehide', ()=> saveGame(true));
+window.addEventListener('pagehide', ()=>{
+  saveGame(true);
+  stopMusic();
+});
 
 /* ================= TABS ================= */
 
@@ -1948,6 +2199,7 @@ document.querySelectorAll('nav.tabs button').forEach(btn=>{
     document.getElementById('tab-options').style.display = tab === 'options' ? 'block' : 'none';
     document.getElementById('tab-rewards').style.display = tab === 'rewards' ? 'block' : 'none';
     document.getElementById('tab-cosmetics').style.display = tab === 'cosmetics' ? 'block' : 'none';
+    document.getElementById('tab-stats').style.display = tab === 'stats' ? 'block' : 'none';
     if(tab === 'dex') renderDex();
     if(tab === 'rewards') renderRewardTimeline();
   });
@@ -1968,21 +2220,30 @@ document.getElementById('reset-btn').addEventListener('click', ()=>{
 setInterval(()=>{
   if(state.autoPower > 0){
     state.pixels += state.autoPower / 5;
+    state.totalPixelsEarned += state.autoPower / 5;
     updateStats();
     renderUpgrades();
   }
 }, 200);
 
+// Chrono de la session en cours + cumul du temps de jeu total, tick chaque
+// seconde, mis en pause quand l'app est en arrière-plan (voir visibilitychange).
+setInterval(()=>{
+  if(document.visibilityState === 'visible'){
+    sessionSeconds++;
+    state.totalPlaytimeSeconds++;
+    if(currentTab === 'stats') updateStats();
+  }
+}, 1000);
+
 updateStats();
 renderUpgrades();
 renderDex();
-loadGame(true).then(()=>{ renderRewardTimeline(); checkOfflineProgress(); });
-
-if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
-  });
-}
+loadGame(true).then(()=>{
+  renderRewardTimeline();
+  checkOfflineProgress();
+  if(!state.firstPlayDate) state.firstPlayDate = todayStr();
+});
 </script>
 </body>
 </html>
