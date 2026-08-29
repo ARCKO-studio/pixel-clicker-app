@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conditions générales d'utilisation — Pixel Clicker</title>
+<style>
+  body{ font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; max-width:720px; margin:0 auto; padding:28px 20px 60px; color:#22222c; line-height:1.6; background:#faf9f6; }
+  h1{ font-size:1.4rem; margin-bottom:4px; }
+  h2{ font-size:1.05rem; margin-top:32px; color:#3a2f6b; }
+  p, li{ font-size:0.95rem; }
+  .updated{ color:#777; font-size:0.85rem; margin-bottom:24px; }
+  .placeholder{ background:#fff3cd; border:1px solid #ffe08a; border-radius:6px; padding:2px 6px; font-style:italic; }
+  .notice{ background:#eef2ff; border:1px solid #c7d2fe; border-radius:10px; padding:14px 16px; font-size:0.85rem; margin-bottom:28px; }
+  a{ color:#3a5fcd; }
+</style>
+</head>
+<body>
+
+<h1>Conditions générales d'utilisation</h1>
+<p class="updated">Dernière mise à jour : <span class="placeholder">[date]</span></p>
+
+<h2>1. Objet</h2>
+<p>
+  Les présentes conditions générales d'utilisation (« CGU ») régissent l'accès et l'utilisation de l'application mobile « Pixel Clicker » (ci-après « l'Application »), un jeu vidéo gratuit de type « incrémental » (clicker), édité par <span class="placeholder">[nom de l'éditeur]</span> (ci-après « l'Éditeur »).
+</p>
+<p>
+  L'installation ou l'utilisation de l'Application implique l'acceptation pleine et entière des présentes CGU. Si tu n'acceptes pas ces conditions, merci de ne pas utiliser l'Application.
+</p>
+
+<h2>2. Description du service</h2>
+<p>
+  L'Application est gratuite au téléchargement. Elle propose :
+</p>
+<ul>
+  <li>un jeu de clic avec collection de « pixels » de différentes raretés ;</li>
+  <li>des améliorations, un musée, des récompenses quotidiennes et des succès accessibles gratuitement par la progression normale du jeu ;</li>
+  <li>l'affichage de publicités, permettant de financer la gratuité de l'Application ;</li>
+  <li>un achat intégré optionnel unique (statut « VIP », détaillé à l'article 5).</li>
+</ul>
+
+<h2>3. Accès au service</h2>
+<p>
+  L'Application fonctionne principalement hors-ligne : la progression de jeu est enregistrée localement sur ton appareil. L'affichage des publicités et le traitement des achats intégrés nécessitent en revanche une connexion internet active.
+</p>
+<p>
+  <strong>Ta progression est stockée localement sur ton appareil.</strong> En cas de désinstallation de l'Application, de changement d'appareil ou d'effacement des données de l'application, ta progression peut être définitivement perdue, sauf si tu as toi-même exporté un code de sauvegarde via la fonction prévue à cet effet dans le menu Options. Nous t'encourageons à utiliser régulièrement cette fonction si tu souhaites conserver ta progression.
+</p>
+
+<h2>4. Compte utilisateur</h2>
+<p>
+  L'Application ne requiert la création d'aucun compte. Aucune identité, adresse e-mail ou information personnelle n'est nécessaire pour jouer.
+</p>
+
+<h2>5. Achats intégrés</h2>
+<p>
+  L'Application propose un achat intégré facultatif unique :
+</p>
+<ul>
+  <li><strong>Statut VIP</strong> — <span class="placeholder">1,99&nbsp;€</span>, achat unique (non récurrent, il ne s'agit pas d'un abonnement), débloquant une augmentation de la durée maximale de gains hors-ligne (de 2h à 8h) ainsi que les avantages présentés dans l'onglet VIP de l'Application au moment de l'achat.</li>
+</ul>
+<p>
+  Le prix affiché dans l'Application peut varier selon ta zone géographique, la devise locale et les taxes applicables, telles qu'affichées par le Google Play Store au moment de l'achat.
+</p>
+<p>
+  Le paiement est intégralement traité par Google Play Facturation. L'Éditeur n'a accès à aucune donnée bancaire et ne peut initier aucun prélèvement de son propre chef.
+</p>
+<p>
+  D'autres achats intégrés (skins, catégories de contenu, boosts temporaires) pourront être ajoutés ultérieurement ; ils seront alors soumis aux mêmes principes que ceux décrits dans cet article, mis à jour en conséquence.
+</p>
+
+<h2>6. Droit de rétractation</h2>
+<p>
+  Conformément à la réglementation applicable à la fourniture de contenu numérique non fourni sur un support matériel, le droit de rétractation de 14 jours ne s'applique pas dès lors que l'exécution du contrat a commencé avec ton accord exprès et que tu as renoncé expressément à ton droit de rétractation avant le début de cette exécution — ce que le processus d'achat via Google Play te demande explicitement de confirmer.
+</p>
+<p>
+  <span class="placeholder">[Ce paragraphe doit être vérifié et adapté selon le droit applicable dans les pays où l'Application est distribuée — les règles sur le droit de rétractation pour le contenu numérique varient.]</span>
+</p>
+
+<h2>7. Publicité</h2>
+<p>
+  L'Application affiche des publicités fournies par Google AdMob. L'affichage, la fréquence et le ciblage de ces publicités sont gérés par Google selon ses propres règles et selon les paramètres de confidentialité choisis par l'utilisateur. Pour plus de détails, consulte notre <a href="politique-confidentialite.html">politique de confidentialité</a>.
+</p>
+
+<h2>8. Propriété intellectuelle</h2>
+<p>
+  L'Application, son contenu (graphismes, textes, sons, code) et sa marque sont protégés par le droit de la propriété intellectuelle et restent la propriété de l'Éditeur ou de ses concédants. L'utilisateur bénéficie d'un droit d'usage personnel, non exclusif et non transférable de l'Application, dans le cadre d'une utilisation normale et conforme à sa destination.
+</p>
+<p>
+  Toute reproduction, extraction, décompilation ou exploitation commerciale non autorisée de l'Application ou de son contenu est interdite.
+</p>
+
+<h2>9. Comportement de l'utilisateur</h2>
+<p>Dans l'utilisation de l'Application, tu t'engages à ne pas :</p>
+<ul>
+  <li>tenter de contourner, pirater ou altérer le fonctionnement de l'Application (y compris les mécanismes de sauvegarde ou d'achat) ;</li>
+  <li>utiliser l'Application à des fins illégales ou contraires aux présentes CGU ;</li>
+  <li>tenter d'extraire ou de redistribuer le code source, les visuels ou tout autre élément protégé de l'Application.</li>
+</ul>
+
+<h2>10. Disponibilité du service</h2>
+<p>
+  L'Éditeur s'efforce d'assurer le bon fonctionnement de l'Application mais ne garantit pas une disponibilité continue et sans erreur. L'Application est fournie « en l'état », sans garantie d'absence de bug ou d'interruption.
+</p>
+
+<h2>11. Limitation de responsabilité</h2>
+<p>
+  L'Éditeur ne saurait être tenu responsable des dommages indirects résultant de l'utilisation de l'Application, ni de la perte de progression de jeu consécutive à la désinstallation de l'Application, à un changement d'appareil, ou à toute autre cause ne relevant pas d'un défaut imputable à l'Éditeur.
+</p>
+<p>
+  Rien dans les présentes CGU n'a pour objet ou pour effet d'exclure ou de limiter la responsabilité de l'Éditeur dans les cas où la loi applicable l'interdit (notamment en cas de faute lourde ou intentionnelle).
+</p>
+
+<h2>12. Modification des CGU</h2>
+<p>
+  L'Éditeur peut modifier les présentes CGU à tout moment, notamment pour refléter une évolution de l'Application, de ses fonctionnalités ou de la réglementation applicable. La version en vigueur est celle accessible depuis le menu Options de l'Application, avec sa date de dernière mise à jour.
+</p>
+
+<h2>13. Résiliation</h2>
+<p>
+  Tu peux cesser d'utiliser l'Application à tout moment en la désinstallant. L'Éditeur se réserve le droit de suspendre l'accès à l'Application en cas de manquement grave aux présentes CGU.
+</p>
+
+<h2>14. Droit applicable et litiges</h2>
+<p>
+  Les présentes CGU sont soumises au droit <span class="placeholder">[français / de votre pays de résidence légale]</span>. En cas de litige, et à défaut de résolution amiable, les tribunaux <span class="placeholder">[compétents selon votre juridiction]</span> seront seuls compétents, sous réserve des règles impératives de protection des consommateurs applicables à ta résidence.
+</p>
+
+<h2>15. Contact</h2>
+<p>Pour toute question relative aux présentes CGU : <span class="placeholder">[adresse e-mail de contact]</span>.</p>
+
+</body>
+</html>
